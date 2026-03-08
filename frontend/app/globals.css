@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────── */
+/* ─── Design Tokens (Dark-first) ─────────────── */
 :root {
   /* Brand palette */
   --color-brand-50:  #f0f4ff;
   --color-brand-100: #dce8ff;
-  --color-brand-500: #3b6ef8;
-  --color-brand-600: #2d5ce8;
-  --color-brand-900: #1a2f7a;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-900: #1a0a3a;
 
-  /* Neutrals */
-  --color-surface:   #ffffff;
-  --color-muted:     #f4f5f7;
-  --color-border:    #e2e4e9;
-  --color-text:      #111318;
-  --color-text-sub:  #6b7280;
+  /* Accent (purple glow) */
+  --color-accent:       #8b5cf6;
+  --color-accent-blue:  #3b82f6;
+  --color-accent-glow:  rgba(139, 92, 246, 0.25);
+  --color-accent-glow2: rgba(59, 130, 246, 0.2);
+
+  /* Neutrals – forced dark */
+  --color-surface:   #0a0a0a;
+  --color-muted:     #111111;
+  --color-card:      rgba(255, 255, 255, 0.04);
+  --color-card-hov:  rgba(255, 255, 255, 0.07);
+  --color-border:    rgba(255, 255, 255, 0.08);
+  --color-border-hi: rgba(255, 255, 255, 0.14);
+  --color-text:      #f0f2f5;
+  --color-text-sub:  #7a8394;
 
   /* Semantic */
   --color-success:   #22c55e;
@@ -27,50 +36,134 @@
   --radius-md:  8px;
   --radius-lg:  12px;
   --radius-xl:  16px;
-}
-
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface:  #0f1117;
-    --color-muted:    #1c1f26;
-    --color-border:   #2a2d35;
-    --color-text:     #f0f2f5;
-    --color-text-sub: #9099a8;
-  }
+  --radius-2xl: 24px;
 }
 
 /* ─── Tailwind theme mapping ─────────────────── */
 @theme inline {
-  --color-brand-50:  var(--color-brand-50);
-  --color-brand-100: var(--color-brand-100);
-  --color-brand-500: var(--color-brand-500);
-  --color-brand-600: var(--color-brand-600);
-  --color-brand-900: var(--color-brand-900);
+  --color-brand-50:      var(--color-brand-50);
+  --color-brand-100:     var(--color-brand-100);
+  --color-brand-500:     var(--color-brand-500);
+  --color-brand-600:     var(--color-brand-600);
+  --color-brand-900:     var(--color-brand-900);
 
-  --color-surface:   var(--color-surface);
-  --color-muted:     var(--color-muted);
-  --color-border:    var(--color-border);
-  --color-text:      var(--color-text);
-  --color-text-sub:  var(--color-text-sub);
+  --color-accent:        var(--color-accent);
+  --color-accent-blue:   var(--color-accent-blue);
 
-  --color-success:   var(--color-success);
-  --color-warning:   var(--color-warning);
-  --color-danger:    var(--color-danger);
-  --color-info:      var(--color-info);
+  --color-surface:       var(--color-surface);
+  --color-muted:         var(--color-muted);
+  --color-card:          var(--color-card);
+  --color-border:        var(--color-border);
+  --color-text:          var(--color-text);
+  --color-text-sub:      var(--color-text-sub);
 
-  --font-display:    var(--font-display);
-  --font-body:       var(--font-body);
-  --font-mono:       var(--font-mono);
+  --color-success:       var(--color-success);
+  --color-warning:       var(--color-warning);
+  --color-danger:        var(--color-danger);
+  --color-info:          var(--color-info);
 
-  --radius-sm:       var(--radius-sm);
-  --radius-md:       var(--radius-md);
-  --radius-lg:       var(--radius-lg);
-  --radius-xl:       var(--radius-xl);
+  --font-display:        var(--font-display);
+  --font-body:           var(--font-body);
+  --font-mono:           var(--font-mono);
+
+  --radius-sm:           var(--radius-sm);
+  --radius-md:           var(--radius-md);
+  --radius-lg:           var(--radius-lg);
+  --radius-xl:           var(--radius-xl);
+  --radius-2xl:          var(--radius-2xl);
 }
 
+/* ─── Base ───────────────────────────────────── */
 body {
   background: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-display, 'Inter', sans-serif);
 }
+
+/* ─── Grid background ────────────────────────── */
+.bg-grid {
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* ─── Glassmorphism card ─────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-hi {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Animations ─────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.35); opacity: 0.6; }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes progress-shimmer {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes glow-cta {
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35), 0 0 60px rgba(139, 92, 246, 0.1); }
+  50%       { box-shadow: 0 0 35px rgba(139, 92, 246, 0.6), 0 0 80px rgba(139, 92, 246, 0.2); }
+}
+
+@keyframes terminal-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes dash-progress {
+  from { stroke-dashoffset: 314.16; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-pulse-dot    { animation: pulse-dot 1.4s ease-in-out infinite; }
+.animate-pulse-ring   { animation: pulse-ring 1.6s ease-out infinite; }
+.animate-fade-in-up   { animation: fade-in-up 0.5s ease-out both; }
+.animate-fade-in      { animation: fade-in 0.4s ease-out both; }
+.animate-glow-cta     { animation: glow-cta 2.5s ease-in-out infinite; }
+.animate-terminal-cur { animation: terminal-cursor 1s step-end infinite; }
+.animate-spin-slow    { animation: spin-slow 8s linear infinite; }
+
+/* stagger delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
