@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────── */
+:root {
+  /* Brand palette */
+  --color-brand-50:  #f0f4ff;
+  --color-brand-100: #dce8ff;
+  --color-brand-500: #3b6ef8;
+  --color-brand-600: #2d5ce8;
+  --color-brand-900: #1a2f7a;
+
+  /* Neutrals */
+  --color-surface:   #ffffff;
+  --color-muted:     #f4f5f7;
+  --color-border:    #e2e4e9;
+  --color-text:      #111318;
+  --color-text-sub:  #6b7280;
+
+  /* Semantic */
+  --color-success:   #22c55e;
+  --color-warning:   #f59e0b;
+  --color-danger:    #ef4444;
+  --color-info:      #3b82f6;
+
+  /* Radius */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface:  #0f1117;
+    --color-muted:    #1c1f26;
+    --color-border:   #2a2d35;
+    --color-text:     #f0f2f5;
+    --color-text-sub: #9099a8;
+  }
+}
+
+/* ─── Tailwind theme mapping ─────────────────── */
+@theme inline {
+  --color-brand-50:  var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-900: var(--color-brand-900);
+
+  --color-surface:   var(--color-surface);
+  --color-muted:     var(--color-muted);
+  --color-border:    var(--color-border);
+  --color-text:      var(--color-text);
+  --color-text-sub:  var(--color-text-sub);
+
+  --color-success:   var(--color-success);
+  --color-warning:   var(--color-warning);
+  --color-danger:    var(--color-danger);
+  --color-info:      var(--color-info);
+
+  --font-display:    var(--font-display);
+  --font-body:       var(--font-body);
+  --font-mono:       var(--font-mono);
+
+  --radius-sm:       var(--radius-sm);
+  --radius-md:       var(--radius-md);
+  --radius-lg:       var(--radius-lg);
+  --radius-xl:       var(--radius-xl);
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-display, 'Inter', sans-serif);
+}
