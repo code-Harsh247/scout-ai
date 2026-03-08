@@ -1,14 +1,21 @@
 import os
 import re
 import json
+import time
+import logging
 
 from gradient import Gradient
+from gradient import APITimeoutError, APIConnectionError
+
+log = logging.getLogger("scout")
 
 _SYSTEM_PROMPT = """You are a Senior UX Researcher and Accessibility Specialist for Scout.ai.
 Score each area from 1 (critically broken) to 10 (excellent).
 Respond with valid JSON only — no markdown, no extra text."""
 
 _MODEL = "llama3.3-70b-instruct"
+_MAX_RETRIES = 3
+_RETRY_DELAY = 3  # seconds
 
 _JSON_SCHEMA = """
 Return ONLY this JSON structure (no markdown):
@@ -44,16 +51,31 @@ DOM CONTENT (first 6000 chars):
 
 {_JSON_SCHEMA}"""
 
-    client = Gradient(model_access_key=os.environ.get("DIGITALOCEAN_INFERENCE_KEY"))
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": text_prompt},
-        ],
-        model=_MODEL,
+    client = Gradient(
+        model_access_key=os.environ.get("DIGITALOCEAN_INFERENCE_KEY"),
+        timeout=120.0,
     )
-    raw = response.choices[0].message.content
-    match = re.search(r"\{[\s\S]*\}", raw)
-    if match:
-        return json.loads(match.group())
-    return {"error": "Failed to parse UX report", "raw": raw}
+
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            response = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": text_prompt},
+                ],
+                model=_MODEL,
+            )
+            raw = response.choices[0].message.content
+            match = re.search(r"\{[\s\S]*\}", raw)
+            if match:
+                return json.loads(match.group())
+            return {"error": "Failed to parse UX report", "raw": raw}
+
+        except (APITimeoutError, APIConnectionError) as exc:
+            if attempt < _MAX_RETRIES:
+                log.warning("[ux_auditor] attempt %d/%d failed (%s) — retrying in %ds",
+                            attempt, _MAX_RETRIES, type(exc).__name__, _RETRY_DELAY)
+                time.sleep(_RETRY_DELAY)
+            else:
+                log.error("[ux_auditor] all %d attempts failed: %s", _MAX_RETRIES, exc)
+                return {"error": f"Gradient API unreachable after {_MAX_RETRIES} attempts: {exc}"}

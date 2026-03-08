@@ -1,8 +1,12 @@
 import base64
+import logging
+import time
 from html.parser import HTMLParser
 
 import httpx
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
+
+log = logging.getLogger("scout")
 
 
 class _AccessibilityChecker(HTMLParser):
@@ -65,6 +69,7 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
 
     try:
         with sync_playwright() as p:
+            log.info("[scraper] launching browser")
             browser = p.chromium.launch(headless=True)
             page = browser.new_page(
                 viewport={"width": viewport_width, "height": viewport_height},
@@ -75,21 +80,31 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
                 ),
             )
 
+            log.info("[scraper] navigating to %s", url)
+            t0 = time.perf_counter()
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                log.info("[scraper] page loaded in %.1fs", time.perf_counter() - t0)
             except PlaywrightTimeoutError:
-                # Page timed out waiting for domcontentloaded, but content may
-                # already be present — proceed and grab whatever loaded.
-                pass
+                log.warning("[scraper] domcontentloaded timeout after %.1fs — using partial content", time.perf_counter() - t0)
 
             final_url = page.url
+            log.info("[scraper] final url: %s", final_url)
+
+            log.info("[scraper] extracting DOM")
             html = page.content()
+            log.info("[scraper] DOM size: %d chars", len(html))
+
+            log.info("[scraper] taking screenshot")
+            t1 = time.perf_counter()
             screenshot_bytes = page.screenshot(full_page=True)
             screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+            log.info("[scraper] screenshot done  %.1fs  size=%d bytes", time.perf_counter() - t1, len(screenshot_bytes))
+
             browser.close()
 
     except Exception as exc:
-        # Playwright failed entirely — fall back to a plain HTTP fetch
+        log.warning("[scraper] Playwright failed: %s — trying HTTP fallback", exc)
         try:
             headers = {
                 "User-Agent": (
@@ -101,7 +116,9 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
             resp = httpx.get(url, headers=headers, follow_redirects=True, timeout=30)
             html = resp.text
             final_url = str(resp.url)
+            log.info("[scraper] HTTP fallback OK  status=%d  size=%d chars", resp.status_code, len(html))
         except Exception as http_exc:
+            log.error("[scraper] HTTP fallback also failed: %s", http_exc)
             return {
                 "url": url,
                 "error": f"Playwright: {exc} | HTTP fallback: {http_exc}",
