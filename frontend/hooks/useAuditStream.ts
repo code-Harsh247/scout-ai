@@ -31,19 +31,67 @@ export interface UxReport {
   error?: string;
 }
 
+export interface ComplianceRiskCategory {
+  risk_level: "Low" | "Medium" | "High" | string;
+  findings: string;
+}
+
+export interface ComplianceReport {
+  overall_risk_score: number; // 1-10 where lower is better
+  data_privacy: ComplianceRiskCategory;
+  legal_transparency: ComplianceRiskCategory;
+  accessibility_compliance: ComplianceRiskCategory;
+  critical_violations: string[];
+  error?: string;
+}
+
+export interface SeoFactor {
+  status: "pass" | "warn" | "fail" | string;
+  note: string;
+}
+
+export interface SeoReport {
+  overall_score: number; // 1-10
+  universal_factors: Record<string, SeoFactor>;
+  search_intent: {
+    primary_intent: string;
+    top_entities: string[];
+    target_keyword_suggestion: string;
+  };
+  intent_alignment: {
+    status: string;
+    explanation: string;
+  };
+  competitor_gap: {
+    missing_crucial_entities: string[];
+  };
+  recommendations: string[];
+  error?: string;
+}
+
 // ---------------------------------------------------------------------------
 // SSE event shapes from backend
 // ---------------------------------------------------------------------------
 
 type SseUiResultEvent  = { type: "ui_result"; ui_report: UiReport };
 type SseUxResultEvent  = { type: "ux_result"; ux_report: UxReport };
-type SseResultEvent    = { type: "result"; ui_report: UiReport; ux_report: UxReport };
+type SseComplianceResultEvent = { type: "compliance_result"; compliance_report: ComplianceReport };
+type SseSeoResultEvent = { type: "seo_result"; seo_report: SeoReport };
+type SseResultEvent    = {
+  type: "result";
+  ui_report?: UiReport;
+  ux_report?: UxReport;
+  compliance_report?: ComplianceReport;
+  seo_report?: SeoReport;
+};
 type SseErrorEvent     = { type: "error"; message: string };
 
 type SseEvent =
   | { type: "status"; [key: string]: unknown }  // ignored
   | SseUiResultEvent
   | SseUxResultEvent
+  | SseComplianceResultEvent
+  | SseSeoResultEvent
   | SseResultEvent
   | SseErrorEvent;
 
@@ -54,8 +102,10 @@ type SseEvent =
 export interface AuditStreamResult {
   uiReport: UiReport | null;
   uxReport: UxReport | null;
+  complianceReport: ComplianceReport | null;
+  seoReport: SeoReport | null;
   isLoading: boolean;
-  /** Final `type: "result"` received — both reports are populated */
+  /** Final `type: "result"` received */
   isDone: boolean;
   error: string | null;
 }
@@ -69,6 +119,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export function useAuditStream(targetUrl: string): AuditStreamResult {
   const [uiReport, setUiReport]   = useState<UiReport | null>(null);
   const [uxReport, setUxReport]   = useState<UxReport | null>(null);
+  const [complianceReport, setComplianceReport] = useState<ComplianceReport | null>(null);
+  const [seoReport, setSeoReport] = useState<SeoReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone]       = useState(false);
   const [error, setError]         = useState<string | null>(null);
@@ -79,6 +131,8 @@ export function useAuditStream(targetUrl: string): AuditStreamResult {
     // Reset state so a re-run (e.g. React Strict Mode double-invoke) starts clean
     setUiReport(null);
     setUxReport(null);
+    setComplianceReport(null);
+    setSeoReport(null);
     setIsLoading(false);
     setIsDone(false);
     setError(null);
@@ -160,9 +214,19 @@ export function useAuditStream(targetUrl: string): AuditStreamResult {
           setUxReport(event.ux_report);
           break;
 
+        case "compliance_result":
+          setComplianceReport(event.compliance_report);
+          break;
+
+        case "seo_result":
+          setSeoReport(event.seo_report);
+          break;
+
         case "result":
           if (event.ui_report) setUiReport(event.ui_report);
           if (event.ux_report) setUxReport(event.ux_report);
+          if (event.compliance_report) setComplianceReport(event.compliance_report);
+          if (event.seo_report) setSeoReport(event.seo_report);
           setIsLoading(false);
           setIsDone(true);
           break;
@@ -181,5 +245,5 @@ export function useAuditStream(targetUrl: string): AuditStreamResult {
     };
   }, [targetUrl]);
 
-  return { uiReport, uxReport, isLoading, isDone, error };
+  return { uiReport, uxReport, complianceReport, seoReport, isLoading, isDone, error };
 }

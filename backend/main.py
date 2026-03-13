@@ -25,6 +25,8 @@ log = logging.getLogger("scout")
 from agents.ui_agent import run_ui_audit
 from agents.ux_agent import run_ux_audit
 from agents.compliance_agent import run_compliance_audit
+from agents.seo_agent import run_seo_audit
+from tools.seo_scraper import fetch_raw_html
 from tools.vision_scraper import capture_website_context
 
 # ---------------------------------------------------------------------------
@@ -37,6 +39,7 @@ class ScoutState(TypedDict):
     ui_report: dict
     ux_report: dict
     compliance_report: dict
+    seo_report: dict
 
 # ---------------------------------------------------------------------------
 # 2. Graph nodes
@@ -97,6 +100,40 @@ def compliance_audit_node(state: ScoutState) -> dict:
     return {"compliance_report": report}
 
 
+def seo_audit_node(state: ScoutState) -> dict:
+    """Run the SEO audit (Llama 3.3 70B via Gradient + scraper checks)."""
+    log.info("[seo_auditor] START  model=llama3.3-70b-instruct")
+    t0 = time.perf_counter()
+
+    url = state["target_url"]
+    page_context = state["page_context"]
+
+    fetch_res = fetch_raw_html(url)
+    raw_html = fetch_res.get("raw_html", "")
+    if not raw_html:
+        elapsed = time.perf_counter() - t0
+        error = fetch_res.get("error", "Failed to fetch raw HTML")
+        log.error("[seo_auditor] ERROR  %.1fs  %s", elapsed, error)
+        return {"seo_report": {"error": error}}
+
+    rendered_dom = page_context.get("dom", "")
+    playwright_succeeded = bool(page_context.get("screenshot_base64"))
+
+    report = run_seo_audit(
+        url=url,
+        raw_html=raw_html,
+        rendered_dom=rendered_dom,
+        playwright_succeeded=playwright_succeeded,
+    )
+
+    elapsed = time.perf_counter() - t0
+    if "error" in report:
+        log.error("[seo_auditor] ERROR  %.1fs  %s", elapsed, report["error"])
+    else:
+        log.info("[seo_auditor] DONE   %.1fs  overall_score=%s", elapsed, report.get("overall_score"))
+    return {"seo_report": report}
+
+
 def merge_node(state: ScoutState) -> dict:
     """No-op merge point — all audit branches converge here."""
     return {}
@@ -111,19 +148,22 @@ workflow.add_node("scrape", scrape_node)
 workflow.add_node("ui_auditor", ui_audit_node)
 workflow.add_node("ux_auditor", ux_audit_node)
 workflow.add_node("compliance_auditor", compliance_audit_node)
+workflow.add_node("seo_auditor", seo_audit_node)
 workflow.add_node("merge", merge_node)
 
 workflow.set_entry_point("scrape")
 
-# Fan-out: scrape → ui_auditor + ux_auditor + compliance_auditor (parallel)
+# Fan-out: scrape -> ui_auditor + ux_auditor + compliance_auditor + seo_auditor (parallel)
 workflow.add_edge("scrape", "ui_auditor")
 workflow.add_edge("scrape", "ux_auditor")
 workflow.add_edge("scrape", "compliance_auditor")
+workflow.add_edge("scrape", "seo_auditor")
 
 # Fan-in: all auditors → merge → END
 workflow.add_edge("ui_auditor", "merge")
 workflow.add_edge("ux_auditor", "merge")
 workflow.add_edge("compliance_auditor", "merge")
+workflow.add_edge("seo_auditor", "merge")
 workflow.add_edge("merge", END)
 
 scout_graph = workflow.compile()
@@ -136,7 +176,7 @@ app = FastAPI(title="Scout.ai")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -153,10 +193,11 @@ def _sse(data: dict) -> str:
 
 
 def _run_graph(url: str) -> dict:
-    """Run the LangGraph synchronously and return {ui_report, ux_report, compliance_report} or {error}."""
+    """Run the LangGraph synchronously and return all reports or {error}."""
     ui_report = None
     ux_report = None
     compliance_report = None
+    seo_report = None
     for event in scout_graph.stream({"target_url": url}, stream_mode="updates"):
         for node_name, update in event.items():
             if node_name == "scrape":
@@ -169,7 +210,14 @@ def _run_graph(url: str) -> dict:
                 ux_report = update.get("ux_report")
             elif node_name == "compliance_auditor":
                 compliance_report = update.get("compliance_report")
-    return {"ui_report": ui_report, "ux_report": ux_report, "compliance_report": compliance_report}
+            elif node_name == "seo_auditor":
+                seo_report = update.get("seo_report")
+    return {
+        "ui_report": ui_report,
+        "ux_report": ux_report,
+        "compliance_report": compliance_report,
+        "seo_report": seo_report,
+    }
 
 
 async def _stream_audit(url: str):
@@ -189,6 +237,7 @@ async def _stream_audit(url: str):
             "ui_report": result["ui_report"],
             "ux_report": result["ux_report"],
             "compliance_report": result["compliance_report"],
+            "seo_report": result["seo_report"],
         })
 
     except Exception as exc:
@@ -223,6 +272,48 @@ async def audit_compliance(req: AuditRequest):
             yield _sse({"type": "result", "compliance_report": report})
         except Exception as exc:
             log.exception("[request] COMPLIANCE ERROR  %s", exc)
+            yield _sse({"type": "error", "message": str(exc)})
+
+    return StreamingResponse(
+        _stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/audit/seo")
+async def audit_seo(req: AuditRequest):
+    """Scrape the URL and run only the SEO audit."""
+
+    async def _stream():
+        loop = asyncio.get_event_loop()
+        log.info("[request] SEO START  url=%s", req.url)
+        t0 = time.perf_counter()
+        try:
+            context = await loop.run_in_executor(_executor, lambda: capture_website_context(req.url))
+            if context.get("error"):
+                yield _sse({"type": "error", "message": context["error"]})
+                return
+
+            fetch_res = await loop.run_in_executor(_executor, lambda: fetch_raw_html(req.url))
+            raw_html = fetch_res.get("raw_html", "")
+            if not raw_html:
+                yield _sse({"type": "error", "message": fetch_res.get("error", "Failed to fetch raw HTML")})
+                return
+
+            report = await loop.run_in_executor(
+                _executor,
+                lambda: run_seo_audit(
+                    url=req.url,
+                    raw_html=raw_html,
+                    rendered_dom=context.get("dom", ""),
+                    playwright_succeeded=bool(context.get("screenshot_base64")),
+                ),
+            )
+            log.info("[request] SEO DONE   %.1fs", time.perf_counter() - t0)
+            yield _sse({"type": "result", "seo_report": report})
+        except Exception as exc:
+            log.exception("[request] SEO ERROR  %s", exc)
             yield _sse({"type": "error", "message": str(exc)})
 
     return StreamingResponse(

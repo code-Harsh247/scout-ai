@@ -49,13 +49,12 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-text-sub text-lg leading-relaxed max-w-lg mx-auto">
-            Six specialized AI agents run in parallel—each analyzing a different dimension of your site,
-            from security to vibe, in seconds.
+            Four specialized AI agents run in parallel—analyzing your site's UI, UX, compliance, and SEO in seconds.
           </p>
 
           {/* Agent pills */}
           <div className="flex flex-wrap justify-center gap-2 animate-fade-in delay-200">
-            {["UI Agent", "UX Agent", "Security Agent", "Branding Agent", "Compliance Agent", "Vibe Agent"].map((a, i) => (
+            {["UI Agent", "UX Agent", "Compliance Agent", "SEO Agent"].map((a, i) => (
               <span
                 key={a}
                 className={`px-2.5 py-0.5 rounded-full text-xs font-medium text-text-sub delay-${(i + 1) * 100}`}
