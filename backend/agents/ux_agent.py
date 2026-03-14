@@ -13,6 +13,8 @@ log = logging.getLogger("scout")
 
 _SYSTEM_PROMPT = """You are a Senior UX Researcher and Accessibility Specialist for Scout.ai.
 Score each area from 1 (critically broken) to 10 (excellent).
+Each 'findings' field MUST be a JSON array of 2-4 short bullet strings (max 15 words each).
+Each 'recommended_fix' field MUST be a single actionable sentence (max 20 words).
 Respond with valid JSON only — no markdown, no extra text."""
 
 _MODEL = "llama3.3-70b-instruct"
@@ -23,13 +25,22 @@ _JSON_SCHEMA = """
 Return ONLY this JSON structure (no markdown):
 {
   "overall_score": <integer 1-10>,
-  "accessibility":  { "score": <integer 1-10>, "findings": "<observations>" },
-  "ux_friction":    { "score": <integer 1-10>, "findings": "<observations>" },
-  "navigation_ia":  { "score": <integer 1-10>, "findings": "<observations>" },
-  "inclusivity":    { "score": <integer 1-10>, "findings": "<observations>" },
+  "accessibility":  { "score": <integer 1-10>, "findings": ["<bullet 1>", "<bullet 2>"], "recommended_fix": "<action>" },
+  "ux_friction":    { "score": <integer 1-10>, "findings": ["<bullet 1>", "<bullet 2>"], "recommended_fix": "<action>" },
+  "navigation_ia":  { "score": <integer 1-10>, "findings": ["<bullet 1>", "<bullet 2>"], "recommended_fix": "<action>" },
+  "inclusivity":    { "score": <integer 1-10>, "findings": ["<bullet 1>", "<bullet 2>"], "recommended_fix": "<action>" },
   "recommendations": ["<actionable fix>", ...]
 }
 """
+
+
+def _annotate_evidence(blobs: list, label: str, fix: str) -> list:
+    """Stamp each evidence blob with a human-readable label and fix hint."""
+    for ev in blobs:
+        ev.setdefault("label", label)
+        ev.setdefault("recommended_fix", fix)
+    return blobs
+
 
 
 def run_ux_audit(url: str, context: dict) -> dict:
@@ -106,9 +117,17 @@ VISIBLE PAGE TEXT (cleaned, first 5000 chars):
             try:
                 report = UXReport(**data)
                 result = report.model_dump()
-                # Attach visual evidence to relevant findings
-                result["accessibility"]["evidence"] = evidence_blobs.get("missing_alt_text", [])
-                result["ux_friction"]["evidence"] = evidence_blobs.get("unlabeled_inputs", [])
+                # Attach visual evidence with human-readable labels
+                result["accessibility"]["evidence"] = _annotate_evidence(
+                    evidence_blobs.get("missing_alt_text", []),
+                    label="Image Missing Alt Text",
+                    fix="Add descriptive alt attributes to all meaningful images.",
+                )
+                result["ux_friction"]["evidence"] = _annotate_evidence(
+                    evidence_blobs.get("unlabeled_inputs", []),
+                    label="Unlabeled Form Input",
+                    fix="Associate a visible <label> or aria-label with every form field.",
+                )
                 return result
             except ValidationError as ve:
                 log.error("[ux_auditor] Schema validation failed: %s", ve)

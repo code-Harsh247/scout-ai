@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Flexible pricing plans for startups, growing teams, and enterprises. Choose TechNova's AI, Cloud, and Security tools.">
+  <!-- ISSUE [SEO]: No canonical link — could cause duplicate content if URL params added -->
+  <title>Pricing — TechNova</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="pricing.html" class="active">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="pricing-section">
+    <h1>Simple, Transparent Pricing</h1>
+    <!-- ISSUE [SEO]: thin content — pricing page has very little descriptive text for crawlers -->
+    <p class="pricing-sub">No hidden fees. Cancel anytime.</p>
+
+    <div class="pricing-grid">
+
+      <!-- Free plan -->
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="price">$0<span>/mo</span></div>
+        <ul>
+          <li>5 AI queries/month</li>
+          <li>1 Cloud project</li>
+          <li>Community support</li>
+          <!-- ISSUE [UX]: No visual indicator for disabled/unavailable features — just missing from list -->
+        </ul>
+        <!-- ISSUE [Accessibility]: All three CTA buttons say "Get Started" — identical accessible name -->
+        <button class="btn-primary" style="width:100%">Get Started</button>
+      </div>
+
+      <!-- Pro plan -->
+      <div class="pricing-card featured">
+        <h3>Pro <span class="badge">Popular</span></h3>
+        <div class="price" style="color:#4ecca3;">$49<span style="color:#aaa;">/mo</span></div>
+        <ul>
+          <li>Unlimited AI queries</li>
+          <li>10 Cloud projects</li>
+          <li>Security scanner</li>
+          <li>Priority email support</li>
+        </ul>
+        <!-- ISSUE [Accessibility]: Same label as Starter button — no unique context -->
+        <button class="btn-primary" style="width:100%; background:#4ecca3; color:#1a1a2e;">Get Started</button>
+      </div>
+
+      <!-- Enterprise plan -->
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <!-- ISSUE [UX]: Price is "Custom" but there's no way to get a quote from this page -->
+        <div class="price" style="font-size:1.6rem;">Custom</div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Dedicated infrastructure</li>
+          <li>SLA guarantee</li>
+          <li>24/7 phone support</li>
+          <li>Custom integrations</li>
+        </ul>
+        <!-- ISSUE [Accessibility]: Third identical "Get Started" button -->
+        <button class="btn-primary" style="width:100%">Get Started</button>
+      </div>
+    </div>
+
+    <!-- ISSUE [Compliance]: No mention of refund policy, billing terms, or VAT info -->
+    <!-- ISSUE [UI]: No FAQ section — poor UX for pricing pages -->
+    <div style="margin-top:3rem; text-align:center;">
+      <p style="font-size:0.85rem; color:#888;">All plans include 14-day free trial. No credit card required.</p>
+      <!-- ISSUE [SEO]: No internal links to feature pages from pricing -->
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h5>TechNova</h5>
+        <p>Building the future, one line of code at a time.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Pages</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 TechNova Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -2,108 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TechNova - Next Generation Solutions</title>
-  <!-- Intentionally missing: meta description, og tags, viewport meta -->
+  <!-- ISSUE [SEO]: No viewport meta → not mobile-friendly -->
+  <!-- ISSUE [SEO]: No meta description -->
+  <!-- ISSUE [SEO]: Title is generic, keyword-stuffed -->
+  <title>TechNova - Best Software Company - AI Solutions - Cloud - Cybersecurity</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ISSUE: No skip-to-content link for accessibility -->
+  <!-- ISSUE [Accessibility]: No skip-to-content link -->
 
   <header>
+    <div class="logo">TechNova</div>
     <nav>
-      <div class="logo">TechNova</div>
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Products</a></li>
-        <li><a href="#">About</a></li>
-        <!-- ISSUE: Contact link goes nowhere -->
-        <li><a href="javascript:void(0)">Contact</a></li>
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
       </ul>
     </nav>
   </header>
 
-  <!-- ISSUE: H3 used before any H1 (broken heading hierarchy) -->
-  <h3 class="preheading">Welcome to the future</h3>
+  <!-- ISSUE [UI]: H3 used BEFORE any H1 — broken heading hierarchy -->
+  <h3 class="preheading" style="text-align:center;padding:1rem;color:#888;">Welcome to the future</h3>
 
   <section class="hero">
-    <!-- ISSUE: H1 appears after H3 -->
+    <!-- H1 appears after H3 above — out of order -->
     <h1>We Build Amazing Software</h1>
-    <p class="hero-sub">Empowering businesses with cutting-edge technology solutions since 2019.</p>
+    <p>Empowering businesses with cutting-edge technology solutions since 2019. Transform your workflow with AI, Cloud, and Cybersecurity.</p>
     <div class="hero-buttons">
-      <!-- ISSUE: Button has no accessible name, just an icon -->
-      <button class="btn-primary">Get Started</button>
-      <button class="btn-ghost">&#9654;</button>
+      <a href="pricing.html"><button class="btn-primary">Get Started</button></a>
+      <!-- ISSUE [UX]: Button has no accessible name — only an arrow icon, no aria-label -->
+      <button class="btn-ghost" style="font-size:1.4rem;">&#9654;</button>
     </div>
   </section>
 
   <section class="features">
-    <!-- ISSUE: Jumps from H1 to H4 (skipping H2, H3) -->
+    <!-- ISSUE [UI]: Jumps from H1 → H4, skipping H2 and H3 -->
     <h4>Our Services</h4>
     <div class="feature-grid">
       <div class="feature-card">
-        <!-- ISSUE: Image missing alt text -->
+        <!-- ISSUE [Accessibility]: Image missing alt text entirely -->
         <img src="https://placehold.co/300x200/1a1a2e/e94560?text=AI+Solutions">
         <h5>AI Solutions</h5>
         <p>Leverage artificial intelligence to transform your business operations and drive growth.</p>
+        <div style="padding:0 1rem 1rem;"><a href="products.html#ai"><button class="btn-primary" style="width:100%">Explore AI</button></a></div>
       </div>
       <div class="feature-card">
-        <!-- ISSUE: Image has empty alt text -->
+        <!-- ISSUE [Accessibility]: Image has empty alt="" — decorative but it's a content image -->
         <img src="https://placehold.co/300x200/1a1a2e/00d2ff?text=Cloud+Services" alt="">
         <h5>Cloud Services</h5>
         <p>Scale your infrastructure seamlessly with our enterprise-grade cloud platform.</p>
+        <div style="padding:0 1rem 1rem;"><a href="products.html#cloud"><button class="btn-primary" style="width:100%">Explore Cloud</button></a></div>
       </div>
       <div class="feature-card">
-        <!-- ISSUE: Image missing alt text entirely -->
+        <!-- ISSUE [Accessibility]: Image missing alt text entirely -->
         <img src="https://placehold.co/300x200/1a1a2e/4ecca3?text=Cybersecurity">
         <h5>Cybersecurity</h5>
-        <p>Protect your digital assets with military-grade security solutions.</p>
+        <p>Protect your digital assets with military-grade security solutions and 24/7 monitoring.</p>
+        <div style="padding:0 1rem 1rem;"><a href="products.html#security"><button class="btn-primary" style="width:100%">Explore Security</button></a></div>
       </div>
     </div>
   </section>
 
+  <!-- ISSUE [UI]: Low-contrast stat numbers — #bdc3c7 on #e8e8e8 (contrast ratio ~1.5:1) -->
   <section class="stats">
-    <!-- ISSUE: Low contrast text (light grey on slightly darker grey) -->
-    <div class="stat">
-      <span class="stat-number">500+</span>
-      <span class="stat-label">Happy Clients</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">99.9%</span>
-      <span class="stat-label">Uptime</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">24/7</span>
-      <span class="stat-label">Support</span>
-    </div>
+    <div class="stat"><span class="stat-number">500+</span><span class="stat-label">Happy Clients</span></div>
+    <div class="stat"><span class="stat-number">99.9%</span><span class="stat-label">Uptime</span></div>
+    <div class="stat"><span class="stat-number">24/7</span><span class="stat-label">Support</span></div>
+    <div class="stat"><span class="stat-number">12+</span><span class="stat-label">Years Experience</span></div>
   </section>
 
   <section class="testimonial">
     <h2>What Our Clients Say</h2>
-    <!-- ISSUE: Entire testimonial block is just italic text with no semantic markup -->
+    <!-- ISSUE [UX]: No semantic blockquote, just italic text inside a div -->
     <div class="testimonial-card">
-      <i>"TechNova transformed our entire workflow. Incredible team!"</i>
-      <p style="color: #444; font-size: 11px;">— Sarah K., CTO at FintechCo</p>
+      <i>"TechNova transformed our entire workflow. Incredible team and results!"</i>
+      <!-- ISSUE [UI]: Inline style font-size 11px — too small, poor readability -->
+      <p style="color:#444; font-size:11px; margin-top:0.75rem;">— Sarah K., CTO at FintechCo</p>
     </div>
   </section>
 
-  <section class="contact-form">
+  <section class="contact-form-inline">
     <h2>Get in Touch</h2>
-    <form>
-      <!-- ISSUE: Input has no label, no aria-label, no associated label element -->
+    <form action="#" method="POST">
+      <!-- ISSUE [UX/Accessibility]: Inputs have NO label element, no aria-label, no id linkage -->
       <input type="text" placeholder="Your Name">
-      <!-- ISSUE: Same - no label -->
       <input type="email" placeholder="Your Email">
-      <!-- ISSUE: Textarea with no label -->
       <textarea placeholder="Your Message" rows="4"></textarea>
 
-      <!-- ISSUE: Pre-ticked marketing consent (dark pattern) -->
+      <!-- ISSUE [Compliance - Dark Pattern]: Pre-checked marketing consent -->
       <label class="checkbox-label">
         <input type="checkbox" checked>
-        I agree to receive marketing emails and promotional offers
+        I agree to receive marketing emails and promotional offers from TechNova
       </label>
 
-      <!-- ISSUE: No mention of privacy policy in the form -->
+      <!-- ISSUE [Compliance]: No link to Privacy Policy near the form -->
       <button type="submit" class="btn-primary">Send Message</button>
     </form>
   </section>
@@ -117,29 +114,29 @@
       <div class="footer-col">
         <h5>Quick Links</h5>
         <ul>
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Products</a></li>
-          <li><a href="#">Careers</a></li>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="about.html">About</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h5>Legal</h5>
         <ul>
-          <!-- ISSUE: Privacy Policy and Terms both link to "#" (placeholder) -->
+          <!-- ISSUE [Compliance]: All legal links point to # — no real privacy/ToS pages -->
           <li><a href="#">Privacy Policy</a></li>
           <li><a href="#">Terms of Service</a></li>
-          <!-- ISSUE: Cookie Policy also placeholder -->
           <li><a href="#">Cookie Policy</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
+      <!-- ISSUE [Compliance]: No company registration, address, or real contact info -->
       <p>&copy; 2024 TechNova Inc. All rights reserved.</p>
-      <!-- ISSUE: No company registration, no address, no contact info -->
     </div>
   </footer>
 
-  <!-- ISSUE: No cookie consent banner anywhere on the page -->
+  <!-- ISSUE [Compliance]: No cookie consent banner anywhere -->
 
 </body>
 </html>

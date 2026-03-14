@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Meet the TechNova team — passionate engineers and designers building AI, Cloud, and Cybersecurity solutions for the modern enterprise.">
+  <title>About Us — TechNova</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ISSUE [SEO]: No H1 on the page — only H2s below -->
+  <div class="about-hero">
+    <!-- ISSUE [UI]: H2 used as the page's main heading — H1 is missing entirely -->
+    <h2>Our Story</h2>
+    <p style="max-width:600px; margin:1rem auto; color:#ccc;">
+      Founded in 2012, TechNova has grown from a two-person startup to a global technology leader serving 500+ enterprises worldwide.
+    </p>
+  </div>
+
+  <section class="about-section">
+
+    <!-- ISSUE [UI]: H2 font-size same as hero H2 — no visual hierarchy difference from section to section -->
+    <h2>Our Mission</h2>
+    <p>
+      We believe technology should empower people, not overwhelm them. Our mission is to make enterprise-grade AI, cloud infrastructure, and cybersecurity accessible to businesses of every size.
+    </p>
+    <!-- ISSUE [SEO]: Very thin content after the mission statement — no statistics, no proof points -->
+
+    <h2 style="margin-top:3rem;">Meet the Team</h2>
+    <div class="team-grid">
+
+      <div class="team-card">
+        <!-- ISSUE [Accessibility]: All team images missing alt text -->
+        <img src="https://placehold.co/100x100/1a1a2e/e94560?text=AK">
+        <h4>Alex Kim</h4>
+        <p>CEO & Co-Founder</p>
+        <!-- ISSUE [UX]: No LinkedIn or social link — dead-end card -->
+      </div>
+
+      <div class="team-card">
+        <img src="https://placehold.co/100x100/16213e/00d2ff?text=SJ">
+        <h4>Sara Johnson</h4>
+        <p>CTO</p>
+      </div>
+
+      <div class="team-card">
+        <img src="https://placehold.co/100x100/0f3460/4ecca3?text=MR">
+        <h4>Marco Rossi</h4>
+        <p>Head of Design</p>
+      </div>
+
+      <div class="team-card">
+        <img src="https://placehold.co/100x100/1a1a2e/f59e0b?text=LP">
+        <h4>Lily Park</h4>
+        <p>VP of Engineering</p>
+      </div>
+    </div>
+
+    <!-- ISSUE [UI]: Section below uses inline styles instead of classes — inconsistent design system -->
+    <div style="margin-top:4rem; padding:2rem; background:#fff8f0; border-left:4px solid #e94560; border-radius:4px;">
+      <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">We're Hiring!</h2>
+      <!-- ISSUE [UX]: "Click here" link text is not descriptive — bad for screen readers -->
+      <p style="font-size:0.9rem;">Join our team of innovators. <a href="#">Click here</a> to view open positions.</p>
+    </div>
+
+  </section>
+
+  <!-- ISSUE [UX]: No CTA at the bottom — page dead-ends with no next step -->
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h5>TechNova</h5>
+        <p>Building the future, one line of code at a time.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 TechNova Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

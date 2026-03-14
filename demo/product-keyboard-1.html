@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NovaKey Pro — Cherry MX mechanical keyboard with per-key RGB and USB-C. Built for developers.">
+  <title>NovaKey Pro — TechNova Products</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html" class="active">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div style="max-width:900px;margin:3rem auto;padding:0 2rem;">
+    <a href="products.html" style="font-size:0.85rem;color:#888;">← Back to Products</a>
+
+    <!-- ISSUE [SEO]: H1 is the product name but doesn't include the brand or category keyword -->
+    <h1 style="color:#1a1a2e;margin:1.5rem 0 0.5rem;">NovaKey Pro</h1>
+    <p style="color:#888;font-size:0.9rem;margin-bottom:2rem;">SKU: NK-PRO-001 | Peripherals</p>
+
+    <!-- ISSUE [Accessibility]: Product image has no alt text -->
+    <img src="https://placehold.co/800x400/1a1a2e/f59e0b?text=NovaKey+Pro" style="width:100%;border-radius:8px;margin-bottom:2rem;">
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:2rem;align-items:start;">
+      <div>
+        <h2 style="color:#1a1a2e;margin-bottom:1rem;">Overview</h2>
+        <p style="color:#555;line-height:1.8;">
+          The NovaKey Pro is our flagship mechanical keyboard, designed for developers and power users who demand precision, speed, and customisability. Every keypress is engineered to perfection with Cherry MX Blue switches.
+        </p>
+        <h2 style="color:#1a1a2e;margin:2rem 0 1rem;">Specifications</h2>
+        <!-- ISSUE [UI]: Table has no caption, no thead scope attributes — poor accessibility -->
+        <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+          <tr style="border-bottom:1px solid #eee;"><td style="padding:0.5rem;color:#888;">Switches</td><td style="padding:0.5rem;color:#333;">Cherry MX Blue</td></tr>
+          <tr style="border-bottom:1px solid #eee;"><td style="padding:0.5rem;color:#888;">Layout</td><td style="padding:0.5rem;color:#333;">Full 100%</td></tr>
+          <tr style="border-bottom:1px solid #eee;"><td style="padding:0.5rem;color:#888;">Backlight</td><td style="padding:0.5rem;color:#333;">Per-key RGB</td></tr>
+          <tr style="border-bottom:1px solid #eee;"><td style="padding:0.5rem;color:#888;">Connection</td><td style="padding:0.5rem;color:#333;">USB-C Detachable</td></tr>
+          <tr><td style="padding:0.5rem;color:#888;">Warranty</td><td style="padding:0.5rem;color:#333;">2 Years</td></tr>
+        </table>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+        <!-- ISSUE [UX]: Price shown without tax disclaimer -->
+        <div style="font-size:2rem;font-weight:700;color:#e94560;">$149</div>
+        <div style="font-size:0.8rem;color:#888;margin-bottom:1.5rem;">Free shipping over $100</div>
+        <!-- ISSUE [Accessibility]: Add to Cart button has no aria-label with product name -->
+        <button class="btn-primary" style="width:100%;margin-bottom:0.75rem;">Add to Cart</button>
+        <button class="btn-ghost" style="width:100%;color:#333;border-color:#ddd;">Add to Wishlist</button>
+        <!-- ISSUE [Compliance]: No return policy mentioned near purchase CTA -->
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col"><h5>TechNova</h5><p>Building the future, one line of code at a time.</p></div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2024 TechNova Inc. All rights reserved.</p></div>
+  </footer>
+</body>
+</html>

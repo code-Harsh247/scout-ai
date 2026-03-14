@@ -1,356 +1,218 @@
-/* ==========================================================================
-   TechNova Demo Site — Intentionally flawed CSS for Scout.ai testing
-   ========================================================================== */
+/* =========================================================
+   TechNova Demo Site — Shared Stylesheet
+   INTENTIONAL ISSUES embedded (noted with ISSUE comments)
+   ========================================================= */
 
-/* ISSUE: No CSS reset — inconsistent rendering across browsers */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  /* ISSUE: System font stack only, no web font — looks generic */
-  font-family: Arial, sans-serif;
-  background: #0d0d1a;
-  color: #c8c8d0;
-  /* ISSUE: No explicit line-height — falls back to browser default (~1.2) */
-}
-
-/* ---------- NAV ---------- */
-
-header {
-  /* ISSUE: No sticky/fixed nav — scrolls away */
-  padding: 15px 40px;
-  background: rgba(13, 13, 26, 0.9);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.logo {
-  font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 28px;
-}
-
-.nav-links a {
-  color: #888;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover {
-  color: #fff;
-}
-
-/* ---------- BROKEN PRE-HEADING ---------- */
-
-.preheading {
-  text-align: center;
-  /* ISSUE: Tiny, low-contrast text — hard to read */
-  color: #333;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-top: 60px;
-}
-
-/* ---------- HERO ---------- */
-
-.hero {
-  text-align: center;
-  padding: 30px 20px 80px;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.hero h1 {
-  font-size: 42px;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 16px;
-}
-
-.hero-sub {
-  /* ISSUE: Low contrast — medium grey on dark background */
-  color: #555;
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 30px;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #6c3ce9, #a855f7);
-  color: #fff;
-  border: none;
-  padding: 12px 28px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(108, 60, 233, 0.4);
-}
-
-/* ISSUE: Ghost button has no visible border or background — very low contrast */
-.btn-ghost {
-  background: transparent;
-  color: #444;
-  border: 1px solid #222;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* ---------- FEATURES ---------- */
-
-.features {
-  padding: 60px 20px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.features h4 {
-  text-align: center;
-  color: #fff;
-  font-size: 26px;
-  margin-bottom: 40px;
-}
-
-.feature-grid {
-  display: grid;
-  /* ISSUE: No responsive breakpoints — 3 columns even on mobile */
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.feature-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
-  overflow: hidden;
-  /* ISSUE: No hover state, no focus indicators — feels static */
-}
-
-.feature-card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.feature-card h5 {
-  color: #fff;
-  font-size: 16px;
-  padding: 16px 16px 8px;
-}
-
-.feature-card p {
-  /* ISSUE: Very low contrast text */
-  color: #555;
-  font-size: 13px;
-  padding: 0 16px 16px;
-  line-height: 1.5;
-}
-
-/* ---------- STATS ---------- */
-
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 80px;
-  padding: 60px 20px;
-  /* ISSUE: Background almost same as stat text — contrast disaster */
-  background: #111122;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 36px;
-  font-weight: 800;
-  /* ISSUE: Color too close to background */
-  color: #2a2a40;
-}
-
-.stat-label {
-  font-size: 13px;
-  /* ISSUE: Extremely low contrast */
-  color: #2a2a3a;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* ---------- TESTIMONIAL ---------- */
-
-.testimonial {
-  padding: 60px 20px;
-  text-align: center;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.testimonial h2 {
-  color: #fff;
-  font-size: 24px;
-  margin-bottom: 24px;
-}
-
-.testimonial-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
-  padding: 30px;
-}
-
-.testimonial-card i {
-  color: #888;
-  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f6fa;
+  /* ISSUE: body text colour is very light (#bbb) on white — low contrast */
+  color: #bbb;
   line-height: 1.6;
 }
 
-/* ---------- CONTACT FORM ---------- */
+a { color: #e94560; text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-.contact-form {
-  padding: 60px 20px;
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.contact-form h2 {
-  color: #fff;
-  font-size: 24px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.contact-form form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.contact-form input,
-.contact-form textarea {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: #ccc;
-  font-size: 14px;
-  font-family: inherit;
-  /* ISSUE: No focus ring / outline */
-  outline: none;
-}
-
-/* ISSUE: Placeholder color same as text color — can't tell if field is filled */
-.contact-form input::placeholder,
-.contact-form textarea::placeholder {
-  color: #bbb;
-}
-
-.checkbox-label {
+/* ── Nav ── */
+header {
+  background: #1a1a2e;
+  padding: 0 2rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  /* ISSUE: Low contrast label */
-  color: #555;
-  cursor: pointer;
+  justify-content: space-between;
+  /* ISSUE: No min-height on nav — collapses on small screens */
+  height: 56px;
 }
+.logo { color: #fff; font-size: 1.4rem; font-weight: 700; }
+nav ul { display: flex; gap: 1.5rem; list-style: none; }
+nav ul li a { color: #ccc; font-size: 0.9rem; }
+nav ul li a.active { color: #e94560; }
 
-.contact-form .btn-primary {
-  margin-top: 8px;
-  width: 100%;
-}
-
-/* ---------- FOOTER ---------- */
-
-footer {
-  margin-top: 40px;
-  padding: 40px 20px 20px;
-  background: #080812;
-  border-top: 1px solid rgba(255,255,255,0.04);
-}
-
-.footer-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 40px;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding-bottom: 30px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.footer-col h5 {
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
   color: #fff;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-.footer-col p {
-  color: #555;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.footer-col ul {
-  list-style: none;
-}
-
-.footer-col ul li {
-  margin-bottom: 8px;
-}
-
-.footer-col ul a {
-  color: #555;
-  text-decoration: none;
-  font-size: 13px;
-  transition: color 0.2s;
-}
-
-.footer-col ul a:hover {
-  color: #aaa;
-}
-
-.footer-bottom {
+  padding: 5rem 2rem;
   text-align: center;
-  padding-top: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
+}
+.hero h1 { font-size: 2.8rem; margin-bottom: 1rem; }
+.hero p  { font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; color: #ccc; }
+.hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── Buttons ── */
+.btn-primary {
+  background: #e94560;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  /* ISSUE: No :focus-visible outline — keyboard focus invisible */
+}
+.btn-primary:hover { background: #c73652; }
+
+.btn-ghost {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.4);
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
-.footer-bottom p {
-  color: #333;
-  font-size: 12px;
+/* ── Feature grid ── */
+.features { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+.features h2, .features h4 { text-align: center; margin-bottom: 2rem; color: #1a1a2e; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+
+.feature-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
+.feature-card img { width: 100%; display: block; }
+.feature-card h5   { padding: 1rem 1rem 0.25rem; color: #1a1a2e; }
+.feature-card p    { padding: 0 1rem 1rem; font-size: 0.9rem; }
+
+/* ── Stats ── */
+.stats {
+  background: #e8e8e8;
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  padding: 3rem 2rem;
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+/* ISSUE: stat-number colour (#bdc3c7) on #e8e8e8 background — contrast ratio ~1.5:1 */
+.stat-number { font-size: 2.5rem; font-weight: 700; color: #bdc3c7; display: block; }
+.stat-label  { font-size: 0.85rem; color: #aaa; }
+
+/* ── Testimonial ── */
+.testimonial { padding: 4rem 2rem; text-align: center; }
+.testimonial h2 { color: #1a1a2e; margin-bottom: 1.5rem; }
+.testimonial-card {
+  max-width: 600px; margin: 0 auto;
+  background: #fff; border-radius: 8px;
+  padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  /* ISSUE: No border-left accent, no blockquote — poor semantic structure */
+}
+
+/* ── Pricing ── */
+.pricing-section { padding: 4rem 2rem; max-width: 1000px; margin: 0 auto; }
+.pricing-section h1 { color: #1a1a2e; text-align: center; margin-bottom: 0.5rem; }
+.pricing-sub { text-align: center; margin-bottom: 3rem; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+.pricing-card {
+  background: #fff; border-radius: 8px;
+  padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  text-align: center;
+}
+.pricing-card.featured { background: #1a1a2e; color: #fff; }
+.pricing-card h3 { margin-bottom: 0.5rem; color: inherit; }
+.price { font-size: 2.5rem; font-weight: 700; color: #e94560; }
+.price span { font-size: 0.9rem; color: #888; }
+.pricing-card ul { list-style: none; margin: 1.5rem 0; text-align: left; }
+.pricing-card ul li { padding: 0.3rem 0; font-size: 0.9rem; }
+.pricing-card ul li::before { content: "✓ "; color: #22c55e; }
+/* ISSUE (pricing): no visual difference for disabled features in free plan */
+
+/* ── Login / Auth ── */
+.auth-section {
+  min-height: calc(100vh - 56px);
+  display: flex; align-items: center; justify-content: center;
+  background: #f5f6fa;
+}
+.auth-card {
+  background: #fff; border-radius: 8px;
+  padding: 2.5rem; width: 100%; max-width: 400px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+.auth-card h1 { color: #1a1a2e; text-align: center; margin-bottom: 1.5rem; font-size: 1.6rem; }
+
+.form-group { margin-bottom: 1.2rem; }
+/* ISSUE (login): labels exist but have no `for` attribute — not programmatically linked */
+.form-group label { display: block; font-size: 0.85rem; margin-bottom: 0.4rem; color: #555; }
+.form-group input {
+  width: 100%; padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd; border-radius: 4px;
+  font-size: 0.95rem;
+  /* ISSUE: no :focus style — invisible keyboard focus */
+}
+
+/* ── About ── */
+.about-hero { background: #1a1a2e; color: #fff; padding: 4rem 2rem; text-align: center; }
+/* ISSUE (about): h1 font-size same as h2 — no visual hierarchy */
+.about-hero h1 { font-size: 1.8rem; }
+.about-section { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+.about-section h2 { color: #1a1a2e; margin-bottom: 1rem; font-size: 1.8rem; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.team-card { text-align: center; }
+/* ISSUE (about): team member images have no alt text */
+.team-card img { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 0.75rem; object-fit:cover; }
+.team-card h4 { color: #1a1a2e; font-size: 1rem; }
+.team-card p  { font-size: 0.8rem; color: #888; }
+
+/* ── Products ── */
+.products-section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+.products-section h1 { color: #1a1a2e; text-align: center; margin-bottom: 3rem; }
+.product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.product-card {
+  background: #fff; border-radius: 8px;
+  overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+.product-card img { width: 100%; display: block; }
+.product-card-body { padding: 1.25rem; }
+.product-card-body h3 { color: #1a1a2e; margin-bottom: 0.5rem; }
+.product-card-body p  { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+/* ISSUE (products): CTA buttons inside product cards have identical text "Learn More" — confusing for screen readers */
+
+/* ── Contact / Support ── */
+.contact-section { padding: 4rem 2rem; max-width: 700px; margin: 0 auto; }
+.contact-section h1 { color: #1a1a2e; text-align: center; margin-bottom: 0.5rem; }
+.contact-form { background: #fff; border-radius: 8px; padding: 2.5rem; margin-top: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+/* ISSUE (contact): textarea has no maxlength and no character counter — open to abuse */
+.contact-form textarea { resize: vertical; }
+.contact-form input,
+.contact-form textarea,
+.contact-form select {
+  width: 100%; padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd; border-radius: 4px;
+  font-size: 0.95rem; margin-top: 0.4rem; margin-bottom: 1rem;
+}
+
+/* ── Footer ── */
+footer {
+  background: #1a1a2e;
+  color: #aaa;
+  padding: 3rem 2rem 1rem;
+}
+.footer-content { display: flex; gap: 3rem; flex-wrap: wrap; max-width: 1100px; margin: 0 auto 2rem; }
+.footer-col h5 { color: #fff; margin-bottom: 0.75rem; }
+.footer-col ul { list-style: none; }
+.footer-col ul li + li { margin-top: 0.4rem; }
+.footer-col a { color: #aaa; font-size: 0.9rem; }
+.footer-bottom { text-align: center; font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+
+/* ── Contact form (landing) ── */
+.contact-form-inline { padding: 4rem 2rem; max-width: 700px; margin: 0 auto; }
+.contact-form-inline h2 { color: #1a1a2e; margin-bottom: 1.5rem; }
+.contact-form-inline input,
+.contact-form-inline textarea {
+  display: block; width: 100%; padding: 0.7rem;
+  margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 4px;
+  font-size: 0.95rem;
+}
+.checkbox-label { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1rem; cursor: pointer; }
+
+/* ── Utility ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+.section-title { text-align: center; color: #1a1a2e; margin-bottom: 2rem; }
+.badge { display: inline-block; background: #e94560; color: #fff; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px; vertical-align: middle; }

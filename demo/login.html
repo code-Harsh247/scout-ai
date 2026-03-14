@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ISSUE [SEO]: Meta description is 220 chars — too long (recommended ≤ 160) -->
+  <meta name="description" content="Sign in to TechNova to access your AI, Cloud, and Cybersecurity dashboard. Manage your account, view reports, update settings, and get 24/7 support from the best tech platform available today.">
+  <title>Login — TechNova</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html" class="active">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="auth-section">
+    <div class="auth-card">
+      <h1>Welcome Back</h1>
+
+      <!-- ISSUE [UX]: No visible error state shown when form is empty — no client-side validation feedback -->
+      <!-- ISSUE [Accessibility]: label elements have no `for` attribute — not linked to inputs -->
+      <!-- ISSUE [Accessibility]: inputs have no `id` attributes — cannot be targeted by labels -->
+      <form action="#" method="POST" novalidate>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <!-- No id, no aria-labelledby — screen reader cannot associate label → input -->
+          <input type="email" placeholder="you@company.com" autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <!-- ISSUE [Compliance / UX]: "Remember me" is pre-checked — dark pattern -->
+        <label class="checkbox-label" style="margin-bottom:1rem;">
+          <input type="checkbox" checked> Keep me signed in for 30 days
+        </label>
+
+        <!-- ISSUE [UX]: No password visibility toggle -->
+        <!-- ISSUE [UX]: No CAPTCHA or rate-limit signalling -->
+        <button type="submit" class="btn-primary" style="width:100%">Sign In</button>
+
+        <!-- ISSUE [Compliance]: No mention of how credentials are stored or privacy policy link -->
+        <p style="text-align:center; font-size:0.8rem; margin-top:1rem; color:#888;">
+          Don't have an account? <a href="signup.html">Sign up</a>
+        </p>
+
+        <!-- ISSUE [UX]: Forgot password link uses javascript:void instead of a real page -->
+        <p style="text-align:center; font-size:0.8rem; color:#888;">
+          <a href="javascript:void(0)">Forgot your password?</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content" style="justify-content:center;">
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 TechNova Inc.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

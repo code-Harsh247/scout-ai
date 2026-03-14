@@ -16,14 +16,17 @@ from pydantic import BaseModel, Field
 
 class Evidence(BaseModel):
     check_key: str
+    label: str = ""                 # Human-readable title for the screenshot
     description: str
+    recommended_fix: str = ""       # One-line fix hint shown in the lightbox
     image_base64: str
     element_selector: str = ""
 
 
 class ScoreResult(BaseModel):
     score: int = Field(ge=1, le=10)
-    findings: str
+    findings: list[str]             # 2-4 concise bullet points, each ≤ 15 words
+    recommended_fix: str            # Single most impactful action to raise this score
     evidence: list[Evidence] = []
 
 
@@ -34,7 +37,8 @@ class StatusNote(BaseModel):
 
 class RiskArea(BaseModel):
     risk_level: Literal["High", "Medium", "Low"]
-    findings: str
+    findings: list[str]             # 2-4 concise bullet points, each ≤ 15 words
+    recommended_fix: str            # Single most impactful action to reduce this risk
     evidence: list[Evidence] = []
 
 
@@ -115,3 +119,16 @@ class SEOReport(BaseModel):
     intent_alignment: IntentAlignment
     competitor_gap: CompetitorGap
     recommendations: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Multi-page models
+# ---------------------------------------------------------------------------
+
+class PageAuditResult(BaseModel):
+    url: str
+    page_type: str
+    ui_report: Optional[dict] = None
+    ux_report: Optional[dict] = None
+    compliance_report: Optional[dict] = None
+    seo_report: Optional[dict] = None

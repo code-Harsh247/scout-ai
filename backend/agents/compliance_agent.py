@@ -14,6 +14,8 @@ log = logging.getLogger("scout")
 _SYSTEM_PROMPT = """You are a strict Regulatory, Data Privacy, and Accessibility Compliance Auditor for Scout.ai.
 Your role is to identify legal liabilities and regulatory violations (GDPR, CCPA, WCAG 2.1, ADA).
 Score overall_risk_score from 1 (critical legal risk / non-compliant) to 10 (fully compliant).
+Each 'findings' field MUST be a JSON array of 2-4 short bullet strings (max 15 words each).
+Each 'recommended_fix' field MUST be a single actionable sentence (max 20 words).
 Respond with valid JSON only — no markdown, no extra text."""
 
 _MODEL = "llama3.3-70b-instruct"
@@ -26,19 +28,32 @@ Return ONLY this JSON structure (no markdown):
   "overall_risk_score": <integer 1-10>,
   "data_privacy": {
     "risk_level": "<High|Medium|Low>",
-    "findings": "<observations about cookie banners, consent forms, PII collection>"
+    "findings": ["<bullet 1>", "<bullet 2>"],
+    "recommended_fix": "<action>"
   },
   "legal_transparency": {
     "risk_level": "<High|Medium|Low>",
-    "findings": "<observations about ToS, Privacy Policy links, company info>"
+    "findings": ["<bullet 1>", "<bullet 2>"],
+    "recommended_fix": "<action>"
   },
   "accessibility_compliance": {
     "risk_level": "<High|Medium|Low>",
-    "findings": "<observations based on the DOM and accessibility_summary>"
+    "findings": ["<bullet 1>", "<bullet 2>"],
+    "recommended_fix": "<action>"
   },
   "critical_violations": ["<immediate legal/regulatory liability>", ...]
 }
 """
+
+
+def _annotate_evidence(blobs: list, label: str, fix: str) -> list:
+    """Stamp each evidence blob with a human-readable label and fix hint."""
+    for ev in blobs:
+        ev.setdefault("label", label)
+        ev.setdefault("recommended_fix", fix)
+    return blobs
+
+
 
 
 def run_compliance_audit(url: str, context: dict) -> dict:
@@ -132,10 +147,22 @@ AUDIT INSTRUCTIONS:
             try:
                 report = ComplianceReport(**data)
                 result = report.model_dump()
-                # Attach visual evidence to relevant findings
-                result["legal_transparency"]["evidence"] = evidence_blobs.get("footer_region", [])
-                result["data_privacy"]["evidence"] = evidence_blobs.get("cookie_banner", [])
-                result["accessibility_compliance"]["evidence"] = evidence_blobs.get("missing_alt_text", [])
+                # Attach visual evidence with human-readable labels
+                result["legal_transparency"]["evidence"] = _annotate_evidence(
+                    evidence_blobs.get("footer_region", []),
+                    label="Footer / Legal Links Region",
+                    fix="Add real Privacy Policy and Terms of Service links in the footer.",
+                )
+                result["data_privacy"]["evidence"] = _annotate_evidence(
+                    evidence_blobs.get("cookie_banner", []),
+                    label="Cookie Consent Banner",
+                    fix="Display a GDPR-compliant cookie consent banner on first visit.",
+                )
+                result["accessibility_compliance"]["evidence"] = _annotate_evidence(
+                    evidence_blobs.get("missing_alt_text", []),
+                    label="Image Missing Alt Text (WCAG 2.1)",
+                    fix="Add descriptive alt attributes to all non-decorative images.",
+                )
                 return result
             except ValidationError as ve:
                 log.error("[compliance_auditor] Schema validation failed: %s", ve)
