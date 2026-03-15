@@ -8,3 +8,5 @@ google-genai
 fastapi
 uvicorn
 beautifulsoup4
+supabase
+python-dotenv

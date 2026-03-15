@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title — same as widget-pro and widget-ultra -->
+  <title>Acme Widget | Product Details</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no breadcrumb on deep product page -->
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Widget Lite Edition</h1>
+      <p>Fast, simple, and free to start. Built for solo founders and small teams.</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge badge-blue">Free Tier Available</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+
+      <!-- FLAW: <img> missing alt attribute -->
+      <img
+        src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'1200'%20height%3D'400'%3E%3Crect%20fill%3D'%230ea5e9'%20width%3D'1200'%20height%3D'400'%2F%3E%3Ctext%20x%3D'600'%20y%3D'210'%20text-anchor%3D'middle'%20fill%3D'%23fff'%20font-size%3D'32'%20font-family%3D'sans-serif'%3EWidget%20Lite%20Edition%3C%2Ftext%3E%3C%2Fsvg%3E"
+        class="product-detail-img"
+      >
+
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: 4rem;">
+
+        <div class="content" style="padding: 0;">
+          <h2>Overview</h2>
+          <p>Widget Lite is the fastest way to get started with automation. It has everything a small team or solo operator needs to automate their core workflows — no enterprise contract, no complexity, no minimum seat count.</p>
+
+          <p>Everything in Widget Lite is designed for simplicity: guided setup wizards, starter templates for the most common use cases, and a clean interface that doesn't overwhelm first-time automation builders.</p>
+
+          <h2>What's Included</h2>
+          <ul>
+            <li>Up to 3 team members</li>
+            <li>5 active workflows</li>
+            <li>1,000 automation runs per month</li>
+            <li>50+ integrations including Slack, Gmail, Notion, Google Sheets</li>
+            <li>Pre-built starter templates</li>
+            <li>Real-time run history (last 30 days)</li>
+            <li>Email support</li>
+          </ul>
+
+          <h2>Who Is It For?</h2>
+          <p>Widget Lite is ideal for:</p>
+          <ul>
+            <li>Solo founders and freelancers who want to automate admin work</li>
+            <li>Small teams (under 5 people) who are new to workflow automation</li>
+            <li>Side projects and early-stage startups on tight budgets</li>
+            <li>Teams evaluating Acme before committing to a paid plan</li>
+          </ul>
+
+          <div class="callout" style="margin-top: 2rem;">
+            <p><strong>Upgrading is easy.</strong> When you outgrow Widget Lite, you can upgrade to Widget Pro in one click. All your workflows carry over — no migration required.</p>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; position: sticky; top: 2rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280;">Free forever</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0;">$0<span style="font-size: 1rem; font-weight: 400; color: #6b7280;">/mo</span></div>
+            <!-- FLAW: /signup/ does not exist -->
+            <a href="/signup/" class="btn btn-primary" style="width: 100%; text-align: center; display: block; margin-bottom: 0.75rem;">Sign Up Free</a>
+            <a href="/pricing/" class="btn btn-secondary" style="width: 100%; text-align: center; display: block;">Compare Plans</a>
+
+            <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 1.25rem 0;">
+            <div style="font-size: 0.875rem; color: #6b7280;">
+              <p style="margin-bottom: 0.5rem;">✓ No credit card required</p>
+              <p style="margin-bottom: 0.5rem;">✓ Free forever (no expiry)</p>
+              <p style="margin-bottom: 0.5rem;">✓ Upgrade any time</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">Compare products</h3>
+            <ul style="list-style: none; padding: 0;">
+              <li style="margin-bottom: 0.5rem;"><a href="/products/widget-pro-edition/">Widget Pro Edition</a></li>
+              <li><a href="/products/widget-ultra-edition/">Widget Ultra Edition</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="/products/widget-pro-edition/">Widget Pro</a></li>
+            <li><a href="/products/widget-lite-edition/">Widget Lite</a></li>
+            <li><a href="/products/widget-ultra-edition/">Widget Ultra</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Acme Technology Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

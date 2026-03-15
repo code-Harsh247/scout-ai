@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing | Acme SaaS</title>
+  <!-- FLAW: meta description missing -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Simple, transparent pricing</h1>
+      <p>Start free. Scale as you grow. Cancel any time.</p>
+    </div>
+  </div>
+
+  <!-- FLAW: low-contrast promotional button shown above pricing -->
+  <div style="background: #fef9c3; padding: 1rem 0; text-align: center;">
+    <div class="container">
+      <span style="font-size: 0.9rem;">🎉 Limited time: 40% off annual plans — </span>
+      <!-- FLAW: btn-offer has nearly invisible text (white on yellow) -->
+      <a href="/signup/" class="btn-offer">Claim Offer</a>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="pricing-grid">
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="plan-name">Starter</div>
+          <div class="price">$0<span>/mo</span></div>
+          <ul>
+            <li>Up to 3 team members</li>
+            <li>5 active workflows</li>
+            <li>1,000 automation runs/mo</li>
+            <li>Basic analytics</li>
+            <li>Email support</li>
+          </ul>
+          <!-- FLAW: /signup/ does not exist (broken link) -->
+          <a href="/signup/" class="btn btn-secondary" style="width: 100%; text-align: center;">Get Started Free</a>
+        </div>
+
+        <!-- Pro (featured) -->
+        <div class="pricing-card featured">
+          <div class="plan-name">Pro</div>
+          <span class="badge badge-purple" style="margin-bottom: 0.5rem;">Most Popular</span>
+          <div class="price">$49<span>/mo</span></div>
+          <ul>
+            <li>Up to 25 team members</li>
+            <li>Unlimited workflows</li>
+            <li>50,000 automation runs/mo</li>
+            <li>Advanced analytics</li>
+            <li>Priority email & chat support</li>
+            <li>Custom integrations</li>
+          </ul>
+          <a href="/signup/" class="btn btn-primary" style="width: 100%; text-align: center;">Start Pro Trial</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="pricing-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="price">$199<span>/mo</span></div>
+          <ul>
+            <li>Unlimited team members</li>
+            <li>Unlimited workflows</li>
+            <li>Unlimited automation runs</li>
+            <li>Custom analytics & BI</li>
+            <li>Dedicated account manager</li>
+            <li>SLA & 99.99% uptime</li>
+            <li>SSO / SAML</li>
+          </ul>
+          <a href="/contact/" class="btn btn-secondary" style="width: 100%; text-align: center;">Talk to Sales</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="bg-gray">
+    <div class="container" style="max-width: 700px;">
+      <h2>Frequently Asked Questions</h2>
+
+      <div class="content">
+        <h3>Can I switch plans later?</h3>
+        <p>Yes. You can upgrade or downgrade your plan at any time from your account settings. Changes take effect on your next billing cycle.</p>
+
+        <h3>Is there a free trial for paid plans?</h3>
+        <p>All paid plans include a 14-day free trial — no credit card required.</p>
+
+        <h3>What payment methods do you accept?</h3>
+        <p>We accept all major credit and debit cards (Visa, Mastercard, Amex) as well as PayPal and bank transfer for annual Enterprise plans.</p>
+
+        <h3>Do you offer discounts for nonprofits or startups?</h3>
+        <p>Yes! We offer 50% discounts for registered nonprofits and qualifying early-stage startups. <a href="/contact/">Contact us</a> to apply.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Acme</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="/products/">Products</a></li>
+            <li><a href="/docs/getting-started/">Docs</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Prices shown in USD. Applicable taxes may apply.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

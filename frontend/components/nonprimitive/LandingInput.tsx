@@ -22,7 +22,7 @@ export default function LandingInput() {
     if (!url.trim()) return;
     setLoading(true);
     const params = new URLSearchParams({ url: url.trim(), ctx: context.trim() });
-    router.push(`/analysis?${params.toString()}`);
+    router.push(`/crawl?${params.toString()}`);
   }
 
   return (

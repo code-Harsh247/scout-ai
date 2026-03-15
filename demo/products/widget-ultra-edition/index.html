@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title — same as widget-pro and widget-lite -->
+  <title>Acme Widget | Product Details</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no breadcrumb on deep product page -->
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Widget Ultra Edition</h1>
+      <p>Enterprise-grade power with dedicated infrastructure and white-glove support.</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge badge-green">Enterprise</span>
+        <span class="badge badge-yellow" style="margin-left: 0.5rem;">SOC 2 Type II</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+
+      <!-- FLAW: <img> missing alt attribute -->
+      <img
+        src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'1200'%20height%3D'400'%3E%3Crect%20fill%3D'%23059669'%20width%3D'1200'%20height%3D'400'%2F%3E%3Ctext%20x%3D'600'%20y%3D'210'%20text-anchor%3D'middle'%20fill%3D'%23fff'%20font-size%3D'32'%20font-family%3D'sans-serif'%3EWidget%20Ultra%20Edition%3C%2Ftext%3E%3C%2Fsvg%3E"
+        class="product-detail-img"
+      >
+
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: 4rem;">
+
+        <div class="content" style="padding: 0;">
+          <h2>Built for Scale</h2>
+          <p>Widget Ultra is Acme's enterprise offering — designed for organizations that run mission-critical processes and need guaranteed uptime, dedicated compute, and enterprise-grade security controls.</p>
+
+          <p>Every Widget Ultra customer gets a dedicated account manager, custom onboarding, and a direct line to our engineering team for complex integration requirements.</p>
+
+          <h2>Enterprise Features</h2>
+          <ul>
+            <li>Unlimited team members and roles</li>
+            <li>Unlimited workflows and automation runs</li>
+            <li>Dedicated compute cluster (no multi-tenancy)</li>
+            <li>99.99% uptime SLA with financial penalties</li>
+            <li>SOC 2 Type II certified</li>
+            <li>GDPR Data Processing Agreement (DPA)</li>
+            <li>Single Sign-On (SSO / SAML 2.0)</li>
+            <li>Advanced audit logs (full compliance trail)</li>
+            <li>Custom data residency (US, EU, APAC)</li>
+            <li>Custom integrations built by Acme's team</li>
+            <li>Dedicated Slack channel with engineering team</li>
+            <li>Quarterly business reviews</li>
+          </ul>
+
+          <h2>Security &amp; Compliance</h2>
+          <p>Widget Ultra is built to meet the requirements of regulated industries including healthcare (HIPAA), finance (SOX), and government (FedRAMP Moderate). All data is encrypted at rest (AES-256) and in transit (TLS 1.3).</p>
+
+          <div class="callout callout-warning">
+            <p><strong>Requires a custom contract.</strong> Widget Ultra pricing is tailored to your usage and requirements. <a href="/contact/">Contact our enterprise sales team</a> for a custom quote.</p>
+          </div>
+
+          <h2>Case Studies</h2>
+          <p>Widget Ultra is trusted by some of the world's most demanding organizations:</p>
+          <ul>
+            <li>A Fortune 500 financial services firm runs 2M+ monthly automations across 800 employees</li>
+            <li>A global healthcare provider uses Widget Ultra for compliant patient intake automation</li>
+            <li>A leading e-commerce platform automates order fulfillment across 40+ integrations</li>
+          </ul>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; position: sticky; top: 2rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280;">Starting at</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0;">$199<span style="font-size: 1rem; font-weight: 400; color: #6b7280;">/mo</span></div>
+            <a href="/contact/" class="btn btn-primary" style="width: 100%; text-align: center; display: block; margin-bottom: 0.75rem;">Talk to Sales</a>
+            <a href="/pricing/" class="btn btn-secondary" style="width: 100%; text-align: center; display: block;">View All Plans</a>
+
+            <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 1.25rem 0;">
+            <div style="font-size: 0.875rem; color: #6b7280;">
+              <p style="margin-bottom: 0.5rem;">✓ Custom contract terms</p>
+              <p style="margin-bottom: 0.5rem;">✓ Dedicated account manager</p>
+              <p style="margin-bottom: 0.5rem;">✓ 99.99% SLA</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">Compare products</h3>
+            <ul style="list-style: none; padding: 0;">
+              <li style="margin-bottom: 0.5rem;"><a href="/products/widget-pro-edition/">Widget Pro Edition</a></li>
+              <li style="margin-bottom: 0.5rem;"><a href="/products/widget-lite-edition/">Widget Lite Edition</a></li>
+              <!-- FLAW: broken link — /careers/ does not exist -->
+              <li><a href="/careers/">We're hiring →</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="/products/widget-pro-edition/">Widget Pro</a></li>
+            <li><a href="/products/widget-lite-edition/">Widget Lite</a></li>
+            <li><a href="/products/widget-ultra-edition/">Widget Ultra</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Acme Technology Inc. All rights reserved worldwide.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

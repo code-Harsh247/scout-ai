@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title — same as other two blog posts -->
+  <title>Blog Post | Acme SaaS</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="content">
+    <div class="container">
+      <div class="blog-post-wrap">
+
+        <a href="/blog/" style="color: #6b7280; font-size: 0.875rem;">← Back to Blog</a>
+
+        <h1 style="margin-top: 1.5rem;">Getting Started with Business Automation</h1>
+        <div class="blog-meta">
+          <strong>Sara Chen</strong> · March 10, 2026 · 5 min read ·
+          <span class="badge badge-blue">Automation</span>
+        </div>
+
+        <p>Business automation is no longer a luxury reserved for large enterprises with enormous budgets. Today, tools like Acme put the power of automation in the hands of every team — from three-person startups to thousand-person scale-ups.</p>
+
+        <p>In this guide, we'll cover everything you need to know to get started: what automation really means, where to start, common pitfalls to avoid, and how to measure success once you've shipped your first workflow.</p>
+
+        <h2>What is Business Process Automation?</h2>
+        <p>Business process automation (BPA) is the use of technology to execute recurring tasks or processes where manual effort can be replaced. Unlike robotic process automation (RPA), which mimics human clicks, BPA focuses on the logic of the process itself — triggering actions based on events, conditions, or schedules.</p>
+
+        <p>A simple example: every time a new customer submits a support ticket, automatically route it to the right team, send a confirmation email to the customer, and log it in your CRM. Three tasks that used to require a human now happen in milliseconds.</p>
+
+        <h2>Where to Start</h2>
+        <p>The biggest mistake teams make is automating the wrong thing first. Don't start with the most complex process — start with the most painful one.</p>
+
+        <p>Ask your team: "What's the thing that wastes the most time each week?" That's your first automation candidate. It's usually something embarrassingly simple — copy-pasting data between two tools, sending the same email every Monday morning, or manually updating a spreadsheet.</p>
+
+        <h3>Step 1: Map the current process</h3>
+        <p>Before you automate anything, write down every step of the process as it works today. Who does what? What tools are involved? What are the inputs and outputs? This exercise alone often reveals redundant steps that can be eliminated entirely.</p>
+
+        <h3>Step 2: Identify the trigger</h3>
+        <p>Every automation needs a trigger — the event that sets it in motion. Common triggers include: a form submission, a new row in a spreadsheet, a calendar event, an incoming email, or a time-based schedule.</p>
+
+        <h3>Step 3: Define the actions</h3>
+        <p>What should happen when the trigger fires? Actions can be: creating a record in your database, sending a notification, generating a document, moving a task card, or calling an external API.</p>
+
+        <h2>Measuring Success</h2>
+        <p>Once your first workflow is live, track: (1) time saved per week, (2) error rate compared to manual process, and (3) team satisfaction. These three metrics usually tell you everything you need to know about whether your automation is delivering real value.</p>
+
+        <p>A good rule of thumb: if an automation saves at least 30 minutes per week for one person, it has positive ROI within the first month (assuming setup took less than 2 hours).</p>
+
+        <blockquote>
+          <p>"The goal of automation isn't to replace people — it's to give them back the time to do the work that actually requires a human."</p>
+        </blockquote>
+
+        <h2>Common Pitfalls</h2>
+        <ul>
+          <li><strong>Over-engineering</strong>: The best automation is the simplest one that works. Don't build elaborate branching logic until a simpler version has been proven.</li>
+          <li><strong>No error handling</strong>: What happens when a step fails? Always define a fallback — usually a notification to a human.</li>
+          <li><strong>Not documenting</strong>: Write down what your automation does and why. Future-you (or your teammates) will thank you.</li>
+          <li><strong>Automating broken processes</strong>: If a process is fundamentally flawed, automating it just makes the flaw happen faster.</li>
+        </ul>
+
+        <p>Ready to build your first workflow? <a href="/docs/getting-started/">Read our Getting Started guide</a> or <a href="/pricing/">start a free Acme account</a> today.</p>
+
+        <hr style="margin: 2.5rem 0; border: none; border-top: 1px solid #f3f4f6;">
+
+        <p style="font-size: 0.875rem; color: #6b7280;">
+          Next: <a href="/blog/second-post-about-things/">5 Ways to Improve Team Productivity →</a>
+        </p>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Acme Technology Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

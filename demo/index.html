@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acme SaaS — Automate, Scale, Succeed</title>
+  <meta name="description" content="Acme SaaS helps businesses automate workflows, track performance, and scale faster. Trusted by 10,000+ teams worldwide.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <!-- FLAW: broken link — /team/ does not exist -->
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Automate. Scale. Succeed.</h1>
+      <p class="hero-sub">The all-in-one platform for growing businesses. Replace spreadsheets, manual handoffs, and siloed tools with a single intelligent workspace.</p>
+      <div class="cta-group">
+        <a href="/pricing/" class="btn btn-primary">Start for Free</a>
+        <a href="/about/" class="btn btn-secondary">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section>
+    <div class="container">
+      <h2>Everything your team needs</h2>
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <!-- FLAW: <img> missing alt attribute -->
+          <img src="/images/icon-automation.svg" width="48" height="48">
+          <h3>Smart Automation</h3>
+          <p>Automate repetitive tasks and free your team to focus on what matters. Our no-code builder makes setup take minutes, not days.</p>
+        </div>
+
+        <div class="feature-card">
+          <img src="/images/icon-analytics.svg" alt="Analytics chart icon" width="48" height="48">
+          <h3>Real-time Analytics</h3>
+          <p>Get instant insights into business performance. Track KPIs, monitor trends, and generate board-ready reports with a single click.</p>
+        </div>
+
+        <div class="feature-card">
+          <img src="/images/icon-collab.svg" alt="Team collaboration icon" width="48" height="48">
+          <h3>Team Collaboration</h3>
+          <p>Work seamlessly across teams and time zones. Share workflows, comment in context, and keep everyone on the same page.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Social proof -->
+  <section class="bg-gray">
+    <div class="container">
+      <h2>Trusted by the world's best teams</h2>
+      <div class="logo-row">
+        <span>Stripe</span>
+        <span>Notion</span>
+        <span>Figma</span>
+        <span>Linear</span>
+        <span>Vercel</span>
+        <span>Loom</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog preview -->
+  <section>
+    <div class="container">
+      <h2>From the Blog</h2>
+      <div class="blog-grid">
+        <a href="/blog/my-first-post/" class="blog-card">
+          <div class="tag">Automation</div>
+          <h3>Getting Started with Business Automation</h3>
+          <p>Learn the core concepts of business process automation and how to apply them from day one.</p>
+          <div class="meta">March 10, 2026 · 5 min read</div>
+        </a>
+        <a href="/blog/second-post-about-things/" class="blog-card">
+          <div class="tag">Productivity</div>
+          <h3>5 Ways to Improve Team Productivity</h3>
+          <p>Proven strategies that high-performing teams use to ship more without burning out.</p>
+          <div class="meta">March 5, 2026 · 7 min read</div>
+        </a>
+        <a href="/blog/third-post-tips-tricks/" class="blog-card">
+          <div class="tag">Tips</div>
+          <h3>Power User Tips & Tricks</h3>
+          <p>Advanced shortcuts and workflows that Acme power users rely on every day.</p>
+          <div class="meta">February 28, 2026 · 3 min read</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section style="background: #4f46e5; color: #fff; text-align: center;">
+    <div class="container">
+      <h2 style="color: #fff;">Ready to get started?</h2>
+      <p style="color: #c7d2fe; margin-bottom: 2rem;">Join 10,000+ teams already using Acme to run their businesses.</p>
+      <!-- FLAW: /signup/ does not exist -->
+      <a href="/signup/" class="btn" style="background: #fff; color: #4f46e5;">Create a Free Account</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Acme</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <!-- FLAW: /careers/ does not exist -->
+            <li><a href="/careers/">Careers</a></li>
+            <!-- FLAW: /press/ does not exist -->
+            <li><a href="/press/">Press</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="/products/">All Products</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/docs/getting-started/">Documentation</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Support</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <!-- FLAW: no privacy policy link anywhere on page -->
+        <!-- FLAW: very low contrast text (dark grey on dark background) -->
+        <p class="footer-disclaimer">This site uses cookies. By continuing, you agree to our terms.</p>
+      </div>
+    </div>
+  </footer>
+  <!-- FLAW: no cookie consent banner / GDPR notice -->
+
+</body>
+</html>

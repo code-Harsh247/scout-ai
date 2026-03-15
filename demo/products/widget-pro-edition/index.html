@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title — same title as widget-lite and widget-ultra pages -->
+  <title>Acme Widget | Product Details</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no breadcrumb navigation on deep product page -->
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Widget Pro Edition</h1>
+      <p>The flagship product for teams that are serious about automation.</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge badge-purple">Most Popular</span>
+        <span class="badge badge-green" style="margin-left: 0.5rem;">v3.2 — March 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+
+      <!-- FLAW: <img> element missing alt attribute entirely -->
+      <img
+        src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'1200'%20height%3D'400'%3E%3Crect%20fill%3D'%234f46e5'%20width%3D'1200'%20height%3D'400'%2F%3E%3Ctext%20x%3D'600'%20y%3D'210'%20text-anchor%3D'middle'%20fill%3D'%23fff'%20font-size%3D'32'%20font-family%3D'sans-serif'%3EWidget%20Pro%20Edition%3C%2Ftext%3E%3C%2Fsvg%3E"
+        class="product-detail-img"
+      >
+
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: 4rem;">
+
+        <div class="content" style="padding: 0;">
+          <h2>Overview</h2>
+          <p>Widget Pro Edition is our most advanced automation platform, designed for teams of 10 to 250 who need reliable, scalable workflows without the overhead of enterprise contracts.</p>
+
+          <p>With Widget Pro, you get unlimited workflow runs, real-time monitoring, and the ability to integrate with over 300 third-party services — from Salesforce and HubSpot to GitHub and Jira.</p>
+
+          <h2>Key Features</h2>
+          <ul>
+            <li>Unlimited workflows and automation runs</li>
+            <li>300+ native integrations</li>
+            <li>Real-time workflow monitoring and alerting</li>
+            <li>Advanced conditional logic (branching, loops, error handling)</li>
+            <li>Team collaboration and role-based access control</li>
+            <li>Version history and rollback for all workflows</li>
+            <li>Custom webhooks and API access</li>
+            <li>Priority email and live chat support</li>
+          </ul>
+
+          <h2>How It Works</h2>
+          <p>Widget Pro uses a visual drag-and-drop builder to create workflows. Each workflow consists of a trigger (the event that starts it) and one or more actions (what happens in response). You can chain actions together, add conditional branches, and loop over collections of items.</p>
+
+          <p>All workflows run on Acme's managed infrastructure — no servers to configure, no scaling to worry about. If a run fails, Widget Pro automatically retries it and notifies your team.</p>
+
+          <h2>Integration Highlights</h2>
+          <p>Connect Widget Pro to the tools your team already uses:</p>
+          <ul>
+            <li><strong>CRM:</strong> Salesforce, HubSpot, Pipedrive</li>
+            <li><strong>Communication:</strong> Slack, Microsoft Teams, email (SMTP/Gmail)</li>
+            <li><strong>Project Management:</strong> Asana, Jira, Linear, Notion</li>
+            <li><strong>Data:</strong> Airtable, Google Sheets, PostgreSQL, MySQL</li>
+            <li><strong>Payment:</strong> Stripe, Paddle</li>
+            <li><strong>Custom:</strong> Any REST API via the HTTP connector</li>
+          </ul>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; position: sticky; top: 2rem;">
+            <div class="plan-name" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280;">Starting at</div>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0;">$49<span style="font-size: 1rem; font-weight: 400; color: #6b7280;">/mo</span></div>
+            <!-- FLAW: /signup/ does not exist -->
+            <a href="/signup/" class="btn btn-primary" style="width: 100%; text-align: center; display: block; margin-bottom: 0.75rem;">Start Free Trial</a>
+            <a href="/pricing/" class="btn btn-secondary" style="width: 100%; text-align: center; display: block;">View Pricing</a>
+
+            <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 1.25rem 0;">
+
+            <div style="font-size: 0.875rem; color: #6b7280;">
+              <p style="margin-bottom: 0.5rem;">✓ 14-day free trial</p>
+              <p style="margin-bottom: 0.5rem;">✓ No credit card required</p>
+              <p style="margin-bottom: 0.5rem;">✓ Cancel any time</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">Compare products</h3>
+            <ul style="list-style: none; padding: 0;">
+              <li style="margin-bottom: 0.5rem;"><a href="/products/widget-lite-edition/">Widget Lite Edition</a></li>
+              <li><a href="/products/widget-ultra-edition/">Widget Ultra Edition</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Specs table -->
+      <h2 style="margin-top: 3rem;">Technical Specifications</h2>
+      <table class="specs-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Widget Lite</th>
+            <th>Widget Pro</th>
+            <th>Widget Ultra</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Team members</td><td>Up to 3</td><td>Up to 25</td><td>Unlimited</td></tr>
+          <tr><td>Workflows</td><td>5</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>Monthly runs</td><td>1,000</td><td>50,000</td><td>Unlimited</td></tr>
+          <tr><td>Integrations</td><td>50+</td><td>300+</td><td>300+ + custom</td></tr>
+          <tr><td>API access</td><td>—</td><td>✓</td><td>✓</td></tr>
+          <tr><td>SLA uptime</td><td>99.5%</td><td>99.9%</td><td>99.99%</td></tr>
+          <tr><td>Support</td><td>Email</td><td>Email + Chat</td><td>Dedicated manager</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="/products/widget-pro-edition/">Widget Pro</a></li>
+            <li><a href="/products/widget-lite-edition/">Widget Lite</a></li>
+            <li><a href="/products/widget-ultra-edition/">Widget Ultra</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/pricing/">Pricing</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Acme Technology Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

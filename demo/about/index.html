@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title with pricing page -->
+  <title>About | Acme SaaS</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <!-- FLAW: nav link order inconsistent with other pages (Blog moved, Team removed) -->
+      <ul class="nav-links">
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no <h1> on this page — the first heading is an <h2> -->
+  <div class="page-header">
+    <div class="container">
+      <h2 style="font-size: 2.5rem; font-weight: 800;">About Acme</h2>
+      <p>We're on a mission to make business automation accessible to every team.</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container" style="max-width: 800px;">
+
+      <!-- FLAW: extremely thin content — barely any text on the page -->
+      <p>Acme was founded in 2021 by a group of engineers tired of clunky enterprise software.</p>
+      <p>We believe every team deserves great tools, regardless of size or budget.</p>
+
+      <!-- FLAW: broken link to /press/ -->
+      <p>Read our <a href="/press/">press coverage</a> to learn more about our story.</p>
+
+      <!-- Team section (thin) -->
+      <h2>Our Team</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar">👩‍💻</div>
+          <h3>Sara Chen</h3>
+          <p>Co-founder & CEO</p>
+        </div>
+        <div class="team-card">
+          <div class="avatar">👨‍💼</div>
+          <h3>James Park</h3>
+          <p>Co-founder & CTO</p>
+        </div>
+        <div class="team-card">
+          <div class="avatar">👩‍🎨</div>
+          <h3>Maya Patel</h3>
+          <p>Head of Design</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc.</p>
+        <p class="footer-disclaimer">Acme Technology Inc. All rights reserved worldwide.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

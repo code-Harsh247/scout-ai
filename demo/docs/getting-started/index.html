@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started | Acme Docs</title>
+  <meta name="description" content="Learn how to set up Acme, create your first workflow, and connect your first integration in under 10 minutes.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no breadcrumb here — user doesn't know where they are in the docs hierarchy -->
+
+  <section class="content">
+    <div class="container">
+      <div class="docs-layout">
+
+        <!-- Sidebar -->
+        <aside class="docs-sidebar">
+          <h3>Get Started</h3>
+          <ul>
+            <li><a href="/docs/getting-started/" class="active">Getting Started</a></li>
+            <!-- FLAW: /docs/advanced-configuration/ does not exist (broken link) -->
+            <li><a href="/docs/advanced-configuration/">Advanced Configuration</a></li>
+          </ul>
+
+          <h3>Workflows</h3>
+          <ul>
+            <!-- FLAW: all these docs links are broken — pages don't exist -->
+            <li><a href="/docs/creating-workflows/">Creating Workflows</a></li>
+            <li><a href="/docs/triggers/">Triggers</a></li>
+            <li><a href="/docs/actions/">Actions</a></li>
+            <li><a href="/docs/conditional-logic/">Conditional Logic</a></li>
+          </ul>
+
+          <h3>Integrations</h3>
+          <ul>
+            <li><a href="/docs/integrations/slack/">Slack</a></li>
+            <li><a href="/docs/integrations/gmail/">Gmail</a></li>
+            <li><a href="/docs/integrations/notion/">Notion</a></li>
+          </ul>
+        </aside>
+
+        <!-- Main content -->
+        <main>
+          <h1>Getting Started with Acme</h1>
+
+          <div class="alert alert-info" style="margin-bottom: 2rem;">
+            <strong>New to Acme?</strong> This guide takes about 10 minutes and covers everything you need to build your first automated workflow.
+          </div>
+
+          <h2>Step 1: Create Your Account</h2>
+          <p>Go to <a href="/pricing/">acme.example.com/pricing</a> and click "Get Started Free" on any plan. You can start with the free Widget Lite tier — no credit card required.</p>
+
+          <p>After signing up, you'll receive a confirmation email. Click the link to verify your address, then log in to your new workspace.</p>
+
+          <h2>Step 2: Connect Your First Integration</h2>
+          <p>Before building a workflow, connect at least one integration. Head to <strong>Settings → Integrations</strong> and choose from the 300+ available connectors.</p>
+
+          <p>For most new users, we recommend starting with one of these:</p>
+          <ul>
+            <li><strong>Slack</strong> — so Acme can send you notifications</li>
+            <li><strong>Gmail</strong> — to send automated emails</li>
+            <li><strong>Google Sheets</strong> — to read and write spreadsheet data</li>
+            <li><strong>Notion</strong> — to create and update database entries</li>
+          </ul>
+
+          <p>Click "Connect" on your chosen integration, follow the OAuth flow, and grant the requested permissions. You'll see a green checkmark once the connection is established.</p>
+
+          <h2>Step 3: Create Your First Workflow</h2>
+          <p>Click the <strong>+ New Workflow</strong> button in the top navigation. You'll be taken to the visual workflow builder.</p>
+
+          <h3>Choose a trigger</h3>
+          <p>Every workflow starts with a trigger — the event that kicks it off. Click the trigger block to open the trigger picker. Common options include:</p>
+          <ul>
+            <li><strong>Schedule</strong> — run at a specific time or interval</li>
+            <li><strong>Webhook</strong> — triggered by an external HTTP request</li>
+            <li><strong>Form submission</strong> — when a form is filled out</li>
+            <li><strong>New email</strong> — when a specific email arrives</li>
+          </ul>
+
+          <h3>Add actions</h3>
+          <p>Click the <strong>+</strong> button below your trigger to add an action. Actions are the things Acme does when the trigger fires — send a Slack message, create a record, update a spreadsheet, and so on.</p>
+
+          <p>Chain multiple actions together to create sophisticated multi-step automations. Each action's output can be used as input to the next — called "dynamic references."</p>
+
+          <pre><code>// Example: Reference a previous step's output
+{{ steps.get_customer.output.email }}
+{{ steps.get_order.output.total_amount }}</code></pre>
+
+          <h2>Step 4: Test Your Workflow</h2>
+          <p>Before activating your workflow, click <strong>Test Workflow</strong> in the top-right corner. This runs the workflow with sample data and shows you exactly what would happen — without making any real changes.</p>
+
+          <p>Check each step's output to make sure the data looks correct. If something is wrong, click the failing step to see the error details and fix it.</p>
+
+          <h2>Step 5: Activate and Monitor</h2>
+          <p>When your test passes, click <strong>Activate</strong> to turn your workflow on. It will now fire automatically whenever the trigger condition is met.</p>
+
+          <p>Monitor your workflow's runs under <strong>Activity → Run History</strong>. You can see every execution, its status (success / failure), and the full input/output for each step.</p>
+
+          <div class="callout">
+            <p><strong>Tip:</strong> Set up failure notifications under <strong>Settings → Alerts</strong> so you're immediately informed if a workflow run fails in production.</p>
+          </div>
+
+          <h2>What's Next?</h2>
+          <p>Now that you've built your first workflow, explore these resources to go deeper:</p>
+          <ul>
+            <!-- FLAW: /docs/advanced-configuration/ is broken -->
+            <li><a href="/docs/advanced-configuration/">Advanced Configuration →</a></li>
+            <li><a href="/blog/my-first-post/">Blog: Getting Started with Business Automation</a></li>
+            <li><a href="/pricing/">Upgrade to Widget Pro for unlimited workflows</a></li>
+          </ul>
+
+          <hr style="margin: 2.5rem 0; border: none; border-top: 1px solid #f3f4f6;">
+          <p style="font-size: 0.875rem; color: #6b7280;">
+            Was this helpful? <a href="/contact/">Send us feedback</a>
+          </p>
+        </main>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+        <p class="footer-disclaimer">Acme Technology Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

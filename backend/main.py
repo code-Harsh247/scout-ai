@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -188,6 +188,11 @@ class AuditRequest(BaseModel):
     url: str
 
 
+class CrawlRequest(BaseModel):
+    url: str
+    options: Optional[dict] = None
+
+
 def _sse(data: dict) -> str:
     return f"data: {json.dumps(data)}\n\n"
 
@@ -321,3 +326,126 @@ async def audit_seo(req: AuditRequest):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ---------------------------------------------------------------------------
+# 6.  Site Crawler  (Phase 1)
+# ---------------------------------------------------------------------------
+
+@app.post("/crawl")
+async def start_crawl(req: CrawlRequest):
+    """
+    Start a full-site BFS crawl of req.url.
+    Streams SSE events: crawler_started, page_discovered, page_visiting,
+    page_visited, page_skipped, broken_link, template_detected, crawl_complete.
+    """
+    async def _sse_stream():
+        from crawler.db import create_session
+        from crawler.bfs_crawler import BFSCrawler
+
+        opts = req.options or {}
+        log.info("[request] CRAWL START  url=%s", req.url)
+        t0 = time.perf_counter()
+
+        session_id = await asyncio.to_thread(create_session, req.url, opts)
+
+        yield _sse({
+            "type": "crawler_started",
+            "session_id": session_id,
+            "root_url": req.url,
+            "config": opts,
+        })
+
+        crawler = BFSCrawler(
+            root_url=req.url,
+            session_id=session_id,
+            depth_limit=int(opts.get("depth_limit", 4)),
+            page_limit=int(opts.get("page_limit", 150)),
+            max_samples=int(opts.get("max_samples_per_template", 3)),
+            concurrency=int(opts.get("concurrency", 3)),
+        )
+
+        async for event in crawler.crawl():
+            yield _sse(event)
+
+        log.info("[request] CRAWL DONE   total=%.1fs", time.perf_counter() - t0)
+
+    return StreamingResponse(
+        _sse_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/crawl/{session_id}")
+async def get_crawl_session(session_id: str):
+    """Return a crawl session summary (requires Supabase)."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        res = client.table("crawl_sessions").select("*").eq("id", session_id).single().execute()
+        return res.data or {}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/crawl/{session_id}/pages")
+async def get_crawl_pages(session_id: str, limit: int = 100, offset: int = 0):
+    """Return paginated visited pages for a crawl session."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        res = (
+            client.table("crawled_pages")
+            .select("id,url,url_pattern,is_template_representative,status_code,page_title,depth")
+            .eq("session_id", session_id)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        return {"pages": res.data or [], "offset": offset, "limit": limit}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/crawl/{session_id}/broken-links")
+async def get_broken_links(session_id: str):
+    """Return all broken links found in a crawl session."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        res = (
+            client.table("crawled_links")
+            .select("to_url,link_text,link_status,status_code,final_url,from_page_id")
+            .eq("session_id", session_id)
+            .neq("link_status", "ok")
+            .neq("link_status", "redirect")
+            .execute()
+        )
+        return {"broken_links": res.data or []}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/crawl/{session_id}/templates")
+async def get_template_patterns(session_id: str):
+    """Return discovered template patterns for a crawl session."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        res = (
+            client.table("template_patterns")
+            .select("*")
+            .eq("session_id", session_id)
+            .execute()
+        )
+        return {"templates": res.data or []}
+    except Exception as e:
+        return {"error": str(e)}

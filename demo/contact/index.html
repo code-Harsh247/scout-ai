@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!-- FLAW: missing lang attribute on <html> element -->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- FLAW: missing viewport meta tag entirely -->
+  <title>Contact Us | Acme SaaS</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- FLAW: no <h1> on this page — starts with <h2> -->
+  <div class="page-header">
+    <div class="container">
+      <h2 style="font-size: 2.5rem; font-weight: 800;">Get in Touch</h2>
+      <p>Our team typically responds within 1 business day.</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container" style="max-width: 640px;">
+
+      <!-- FLAW: form inputs have no associated <label> elements — accessibility violation -->
+      <form method="POST" action="/contact/submit">
+
+        <!-- FLAW: placeholder used as label substitute — no <label> tag -->
+        <div class="form-group">
+          <input type="text" name="name" placeholder="Your full name" required>
+        </div>
+
+        <!-- FLAW: no label -->
+        <div class="form-group">
+          <input type="email" name="email" placeholder="Email address" required>
+        </div>
+
+        <!-- FLAW: no label -->
+        <div class="form-group">
+          <input type="text" name="subject" placeholder="Subject">
+        </div>
+
+        <!-- FLAW: no label, no accessible name for textarea -->
+        <div class="form-group">
+          <textarea name="message" placeholder="How can we help you?"></textarea>
+        </div>
+
+        <!-- FLAW: button has no type="submit" attribute — may misbehave in some browsers -->
+        <!-- FLAW: no GDPR consent checkbox / notice before submit -->
+        <button class="btn btn-primary" style="width: 100%;">Send Message</button>
+
+      </form>
+
+      <!-- FLAW: no mention of privacy policy here despite collecting personal data -->
+
+      <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #f3f4f6;">
+        <h2>Other ways to reach us</h2>
+        <p><strong>Email:</strong> hello@acme.example.com</p>
+        <p><strong>Twitter:</strong> @AcmeSaaS</p>
+        <p><strong>Address:</strong> 123 Startup Lane, San Francisco, CA 94107</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FLAW: duplicate title — same as other two blog posts -->
+  <title>Blog Post | Acme SaaS</title>
+  <!-- FLAW: no meta description -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">Acme</a>
+      <ul class="nav-links">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/products/">Products</a></li>
+        <li><a href="/pricing/">Pricing</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/getting-started/">Docs</a></li>
+        <li><a href="/team/">Team</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="content">
+    <div class="container">
+      <div class="blog-post-wrap">
+
+        <a href="/blog/" style="color: #6b7280; font-size: 0.875rem;">← Back to Blog</a>
+
+        <!-- FLAW: thin content — very short article, insufficient for SEO -->
+        <h1 style="margin-top: 1.5rem;">Power User Tips & Tricks</h1>
+        <div class="blog-meta">
+          <strong>Maya Patel</strong> · February 28, 2026 · 3 min read ·
+          <span class="badge badge-yellow">Tips</span>
+        </div>
+
+        <!-- FLAW: extremely thin content — just a bullet list, no real body text -->
+        <p>Here are some quick tips for getting more out of Acme:</p>
+
+        <ul>
+          <li>Use <code>Cmd+K</code> to open the command palette</li>
+          <li>Press <code>G then W</code> to jump to any workflow</li>
+          <li>Star frequently used workflows for quick access</li>
+          <li>Use the bulk-action toolbar to update multiple records at once</li>
+          <li>Enable "Focus Mode" in settings to hide the sidebar</li>
+          <li>Use variables in workflow names for dynamic labeling</li>
+          <li>Set up Slack notifications for critical workflow failures</li>
+        </ul>
+
+        <!-- FLAW: no concluding paragraph, no CTA, no links to related content -->
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Acme SaaS Inc. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
