@@ -4,14 +4,15 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel
+from auth import get_current_user_optional
 
 load_dotenv()
 
@@ -333,7 +334,10 @@ async def audit_seo(req: AuditRequest):
 # ---------------------------------------------------------------------------
 
 @app.post("/crawl")
-async def start_crawl(req: CrawlRequest):
+async def start_crawl(
+    req: CrawlRequest,
+    user: dict | None = Depends(get_current_user_optional),
+):
     """
     Start a full-site BFS crawl of req.url.
     Streams SSE events: crawler_started, page_discovered, page_visiting,
@@ -344,10 +348,11 @@ async def start_crawl(req: CrawlRequest):
         from crawler.bfs_crawler import BFSCrawler
 
         opts = req.options or {}
-        log.info("[request] CRAWL START  url=%s", req.url)
+        user_id = user["sub"] if user else None
+        log.info("[request] CRAWL START  url=%s  user=%s", req.url, user_id)
         t0 = time.perf_counter()
 
-        session_id = await asyncio.to_thread(create_session, req.url, opts)
+        session_id = await asyncio.to_thread(create_session, req.url, opts, user_id)
 
         yield _sse({
             "type": "crawler_started",
@@ -401,7 +406,7 @@ async def get_crawl_pages(session_id: str, limit: int = 100, offset: int = 0):
     try:
         res = (
             client.table("crawled_pages")
-            .select("id,url,url_pattern,is_template_representative,status_code,page_title,depth")
+            .select("id,url,url_pattern,is_template_representative,status_code,page_title,depth,screenshot_b64")
             .eq("session_id", session_id)
             .range(offset, offset + limit - 1)
             .execute()
@@ -449,3 +454,303 @@ async def get_template_patterns(session_id: str):
         return {"templates": res.data or []}
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/crawl/{session_id}/links")
+async def get_all_links(session_id: str, limit: int = 10000, offset: int = 0):
+    """Return ALL links (not just broken) for graph reconstruction."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        # Get links with from_page URL resolved via join
+        res = (
+            client.table("crawled_links")
+            .select("to_url,link_status,is_internal,from_page_id,crawled_pages!from_page_id(url)")
+            .eq("session_id", session_id)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        links = []
+        for row in (res.data or []):
+            from_url = ""
+            page_data = row.get("crawled_pages")
+            if isinstance(page_data, dict):
+                from_url = page_data.get("url", "")
+            links.append({
+                "from_url": from_url,
+                "to_url": row["to_url"],
+                "is_broken": row.get("link_status") not in ("ok", "redirect"),
+                "is_internal": row.get("is_internal", True),
+            })
+        return {"links": links}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/crawl/{session_id}/audit")
+async def get_crawl_audit_session(session_id: str):
+    """Return the audit session (with page results) associated with a crawl session."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured"}
+    try:
+        # Find audit_session linked to this crawl
+        audit_res = (
+            client.table("audit_sessions")
+            .select("id,status,overall_score,started_at,completed_at")
+            .eq("crawl_session_id", session_id)
+            .order("started_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if not audit_res.data:
+            return {"audit_session": None, "pages": []}
+        audit_session = audit_res.data[0]
+        # Get page audit results
+        pages_res = (
+            client.table("page_audits")
+            .select("id,url,ui_report,ux_report,compliance_report,seo_report,overall_score,created_at")
+            .eq("audit_session_id", audit_session["id"])
+            .order("created_at")
+            .execute()
+        )
+        return {"audit_session": audit_session, "pages": pages_res.data or []}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# 7.  Site Audit  (Phase 2)
+# ---------------------------------------------------------------------------
+
+class SiteAuditRequest(BaseModel):
+    session_id: Optional[str] = None
+    urls: List[str]
+    concurrency: Optional[int] = 2
+
+
+@app.post("/audit/site")
+async def audit_site(
+    req: SiteAuditRequest,
+    user: dict | None = Depends(get_current_user_optional),
+):
+    """
+    Audit a list of pages using the full scout_graph pipeline.
+    Accepts page URLs directly so no Supabase dependency is required.
+    Persists results to Supabase audit_sessions / page_audits when configured.
+    Streams SSE: site_audit_started, page_audit_started,
+                 page_audit_complete, page_audit_error, site_audit_complete.
+    """
+    async def _stream():
+        from crawler.db import create_audit_session, save_page_audit, complete_audit_session
+        loop = asyncio.get_event_loop()
+        urls        = [u.strip() for u in req.urls if u and u.strip()]
+        total       = len(urls)
+        concurrency = max(1, min(req.concurrency or 2, 4))
+        user_id     = user["sub"] if user else None
+        log.info("[request] SITE AUDIT START  pages=%d  session=%s  user=%s", total, req.session_id, user_id)
+        t0 = time.perf_counter()
+
+        if total == 0:
+            yield _sse({"type": "error", "message": "No URLs provided for audit"})
+            return
+
+        # Derive root URL from first page for the audit session record
+        root_url = urls[0]
+        try:
+            from urllib.parse import urlparse
+            p = urlparse(urls[0])
+            root_url = f"{p.scheme}://{p.netloc}"
+        except Exception:
+            pass
+
+        # Create audit_session row (no-op when Supabase is not configured)
+        audit_session_id: str = await asyncio.to_thread(
+            create_audit_session, root_url, req.session_id, user_id
+        )
+
+        yield _sse({"type": "site_audit_started", "total": total, "urls": urls,
+                    "audit_session_id": audit_session_id})
+
+        # Queue carries events from concurrent audit tasks back to SSE stream
+        q: asyncio.Queue = asyncio.Queue()
+        sem = asyncio.Semaphore(concurrency)
+        page_scores: list[float] = []
+
+        async def _audit_one(url: str, idx: int) -> None:
+            async with sem:
+                q.put_nowait({
+                    "type": "page_audit_started",
+                    "url": url, "index": idx, "total": total,
+                })
+                try:
+                    result = await loop.run_in_executor(_executor, lambda: _run_graph(url))
+                    if "error" in result:
+                        q.put_nowait({
+                            "type": "page_audit_error",
+                            "url": url, "index": idx, "total": total,
+                            "error": result["error"],
+                        })
+                    else:
+                        # Compute a simple overall score (average of available scores)
+                        scores = [
+                            r.get("overall_score") or r.get("overall_risk_score")
+                            for r in [
+                                result["ui_report"] or {},
+                                result["ux_report"] or {},
+                                result["seo_report"] or {},
+                            ] if r
+                        ]
+                        risk = (result["compliance_report"] or {}).get("overall_risk_score")
+                        if risk is not None:
+                            scores.append(10 - risk)  # invert risk score
+                        valid = [s for s in scores if isinstance(s, (int, float))]
+                        page_score = round(sum(valid) / len(valid), 1) if valid else None
+                        if page_score is not None:
+                            page_scores.append(page_score)
+
+                        # Persist to Supabase (no-op when not configured)
+                        await asyncio.to_thread(
+                            save_page_audit,
+                            audit_session_id, url,
+                            result["ui_report"], result["ux_report"],
+                            result["compliance_report"], result["seo_report"],
+                            page_score,
+                        )
+
+                        q.put_nowait({
+                            "type":              "page_audit_complete",
+                            "url":               url,
+                            "index":             idx,
+                            "total":             total,
+                            "ui_report":         result["ui_report"],
+                            "ux_report":         result["ux_report"],
+                            "seo_report":        result["seo_report"],
+                            "compliance_report": result["compliance_report"],
+                            "audit_session_id":  audit_session_id,
+                        })
+                except Exception as exc:
+                    log.exception("[audit/site] url=%s  %s", url, exc)
+                    q.put_nowait({
+                        "type": "page_audit_error",
+                        "url": url, "index": idx, "total": total,
+                        "error": str(exc),
+                    })
+
+        tasks = [
+            asyncio.create_task(_audit_one(url, i + 1))
+            for i, url in enumerate(urls)
+        ]
+
+        # Drain queue until every page is accounted for
+        done = 0
+        while done < total:
+            event = await q.get()
+            yield _sse(event)
+            if event["type"] in ("page_audit_complete", "page_audit_error"):
+                done += 1
+
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        overall_score = round(sum(page_scores) / len(page_scores), 1) if page_scores else None
+        await asyncio.to_thread(complete_audit_session, audit_session_id, overall_score)
+
+        elapsed = time.perf_counter() - t0
+        log.info("[request] SITE AUDIT DONE   total=%.1fs  pages=%d", elapsed, total)
+        yield _sse({
+            "type":             "site_audit_complete",
+            "total":            total,
+            "duration_ms":      int(elapsed * 1000),
+            "overall_score":    overall_score,
+            "audit_session_id": audit_session_id,
+        })
+
+    return StreamingResponse(
+        _stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/audit/session/{audit_session_id}/pages")
+async def get_audit_session_pages(
+    audit_session_id: str,
+    user: dict | None = Depends(get_current_user_optional),
+):
+    """Return all page_audits rows for a given audit_session_id."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured", "pages": []}
+    try:
+        res = (
+            client.table("page_audits")
+            .select("id,url,ui_report,ux_report,compliance_report,seo_report,overall_score,created_at")
+            .eq("audit_session_id", audit_session_id)
+            .order("created_at")
+            .execute()
+        )
+        return {"pages": res.data or []}
+    except Exception as e:
+        return {"error": str(e), "pages": []}
+
+
+# ---------------------------------------------------------------------------
+# DELETE project (audit_session + associated crawl data)
+# ---------------------------------------------------------------------------
+
+@app.delete("/audit/session/{audit_session_id}")
+async def delete_audit_session(
+    audit_session_id: str,
+    user: dict | None = Depends(get_current_user_optional),
+):
+    """
+    Delete an audit session and its associated crawl session.
+
+    Cascade rules handle child rows:
+      - audit_sessions  → page_audits          (ON DELETE CASCADE)
+      - crawl_sessions  → crawled_pages/links/templates (ON DELETE CASCADE)
+    """
+    from crawler.db import _get_client
+
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "Authentication required"})
+
+    client = _get_client()
+    if not client:
+        return JSONResponse(status_code=500, content={"error": "Database not configured"})
+
+    try:
+        # Fetch the audit session and verify ownership
+        row = (
+            client.table("audit_sessions")
+            .select("id, user_id, crawl_session_id")
+            .eq("id", audit_session_id)
+            .single()
+            .execute()
+        )
+        if not row.data:
+            return JSONResponse(status_code=404, content={"error": "Audit session not found"})
+
+        row_user_id = row.data.get("user_id")
+        # Only enforce ownership when the row actually has an owner assigned.
+        if row_user_id is not None and row_user_id != user["id"]:
+            return JSONResponse(status_code=403, content={"error": "Not authorised"})
+
+        crawl_session_id = row.data.get("crawl_session_id")
+
+        # 1. Delete the audit session (page_audits cascade)
+        client.table("audit_sessions").delete().eq("id", audit_session_id).execute()
+
+        # 2. Delete the associated crawl session if it exists
+        if crawl_session_id:
+            client.table("crawl_sessions").delete().eq("id", crawl_session_id).execute()
+
+        return {"ok": True}
+
+    except Exception as e:
+        log.error("[delete] Failed to delete audit session %s: %s", audit_session_id, e)
+        return JSONResponse(status_code=500, content={"error": str(e)})

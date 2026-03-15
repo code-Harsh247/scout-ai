@@ -1,7 +1,21 @@
-import LandingInput from "@/components/nonprimitive/LandingInput";
+"use client";
+
+import { useRouter } from "next/navigation";
 import FeaturesGrid from "@/components/nonprimitive/FeaturesGrid";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 export default function Home() {
+  const router = useRouter();
+  const { session, loading } = useSupabaseSession();
+
+  function handleGetStarted() {
+    if (session) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
+  }
+
   return (
     <div className="relative min-h-screen bg-grid overflow-hidden">
       {/* Ambient glow blobs */}
@@ -49,7 +63,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-text-sub text-lg leading-relaxed max-w-lg mx-auto">
-            Four specialized AI agents run in parallel—analyzing your site's UI, UX, compliance, and SEO in seconds.
+            Four specialized AI agents run in parallel—analyzing your site&apos;s UI, UX, compliance, and SEO in seconds.
           </p>
 
           {/* Agent pills */}
@@ -66,8 +80,34 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Input card */}
-        <LandingInput />
+        {/* CTA */}
+        <div className="animate-fade-in-up delay-300">
+          <button
+            onClick={handleGetStarted}
+            disabled={loading}
+            className="relative flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl font-semibold text-lg text-white transition-all duration-300 disabled:opacity-60 group overflow-hidden animate-glow-cta"
+            style={{
+              background: "linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%)",
+            }}
+          >
+            {/* shimmer overlay */}
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)" }} />
+
+            {loading ? (
+              <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 12a9 9 0 1 1-6.22-8.56" strokeLinecap="round"/>
+              </svg>
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 2L4.09 12.96A1 1 0 0 0 5 14.5h5.5l-1.5 7.5L19.91 11.04A1 1 0 0 0 19 9.5H13.5L15 2h-2z"/>
+                </svg>
+                Get Started
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Features grid */}
         <FeaturesGrid />

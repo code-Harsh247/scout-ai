@@ -251,12 +251,26 @@ export default function CrawlNodeGraph({
           linkCanvasObjectMode={() => "replace"}
           onNodeClick={handleNodeClick}
           nodeLabel={(node: Record<string, unknown>) => node.id as string}
-          cooldownTicks={120}
-          d3AlphaDecay={0.02}
-          d3VelocityDecay={0.3}
+          cooldownTicks={200}
+          d3AlphaDecay={0.01}
+          d3VelocityDecay={0.2}
           linkDirectionalArrowLength={4}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => "rgba(113,113,122,0.5)"}
+          d3Force={(forceName: string, force: unknown) => {
+            if (forceName === "charge") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (force as any)?.strength(-400).distanceMax(600);
+            }
+            if (forceName === "link") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (force as any)?.distance(120).iterations(3);
+            }
+            if (forceName === "collide") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (force as any)?.radius(20).strength(0.8);
+            }
+          }}
         />
       )}
 

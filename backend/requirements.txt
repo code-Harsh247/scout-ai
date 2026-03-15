@@ -9,4 +9,5 @@ fastapi
 uvicorn
 beautifulsoup4
 supabase
+PyJWT
 python-dotenv

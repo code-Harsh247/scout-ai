@@ -51,18 +51,21 @@ def _get_client():
 # Session helpers
 # ---------------------------------------------------------------------------
 
-def create_session(root_url: str, config: dict) -> str:
+def create_session(root_url: str, config: dict, user_id: Optional[str] = None) -> str:
     """Insert a new crawl_sessions row.  Returns the session UUID."""
     session_id = str(uuid.uuid4())
     client = _get_client()
     if client:
         try:
-            client.table("crawl_sessions").insert({
+            row: dict = {
                 "id": session_id,
                 "root_url": root_url,
                 "status": "running",
                 "config": config,
-            }).execute()
+            }
+            if user_id:
+                row["user_id"] = user_id
+            client.table("crawl_sessions").insert(row).execute()
         except Exception as e:
             log.warning("[db] create_session: %s", e)
     return session_id
@@ -90,13 +93,14 @@ def insert_page(
     page_title: str,
     dom_hash: str,
     depth: int,
+    screenshot_b64: Optional[str] = None,
 ) -> str:
     """Insert a crawled_pages row.  Returns the generated page UUID."""
     page_id = str(uuid.uuid4())
     client = _get_client()
     if client:
         try:
-            client.table("crawled_pages").insert({
+            row: dict = {
                 "id": page_id,
                 "session_id": session_id,
                 "url": url,
@@ -106,10 +110,25 @@ def insert_page(
                 "page_title": page_title,
                 "dom_hash": dom_hash,
                 "depth": depth,
-            }).execute()
+            }
+            if screenshot_b64:
+                row["screenshot_b64"] = screenshot_b64
+            client.table("crawled_pages").insert(row).execute()
         except Exception as e:
             log.warning("[db] insert_page: %s", e)
     return page_id
+
+
+def update_page_screenshot(page_id: str, screenshot_b64: str) -> None:
+    """Attach a screenshot to an already-inserted crawled_pages row."""
+    client = _get_client()
+    if client:
+        try:
+            client.table("crawled_pages").update(
+                {"screenshot_b64": screenshot_b64}
+            ).eq("id", page_id).execute()
+        except Exception as e:
+            log.warning("[db] update_page_screenshot: %s", e)
 
 
 # ---------------------------------------------------------------------------
@@ -183,3 +202,77 @@ def upsert_template_pattern(
                 }).execute()
         except Exception as e:
             log.warning("[db] upsert_template_pattern: %s", e)
+
+
+# ---------------------------------------------------------------------------
+# Audit session helpers  (Phase 3 — saved when Supabase is configured)
+# ---------------------------------------------------------------------------
+
+def create_audit_session(
+    root_url: str,
+    crawl_session_id: Optional[str],
+    user_id: Optional[str],
+) -> str:
+    """Insert a new audit_sessions row.  Returns the generated UUID."""
+    audit_session_id = str(uuid.uuid4())
+    client = _get_client()
+    if client:
+        try:
+            row: dict = {
+                "id":     audit_session_id,
+                "root_url": root_url,
+                "status": "running",
+            }
+            if crawl_session_id:
+                row["crawl_session_id"] = crawl_session_id
+            if user_id:
+                row["user_id"] = user_id
+            client.table("audit_sessions").insert(row).execute()
+        except Exception as e:
+            log.warning("[db] create_audit_session: %s", e)
+    return audit_session_id
+
+
+def save_page_audit(
+    audit_session_id: str,
+    url: str,
+    ui_report: Optional[dict],
+    ux_report: Optional[dict],
+    compliance_report: Optional[dict],
+    seo_report: Optional[dict],
+    overall_score: Optional[float],
+) -> None:
+    """Insert a page_audits row."""
+    client = _get_client()
+    if client:
+        try:
+            client.table("page_audits").insert({
+                "id":                str(uuid.uuid4()),
+                "audit_session_id":  audit_session_id,
+                "url":               url,
+                "ui_report":         ui_report,
+                "ux_report":         ux_report,
+                "compliance_report": compliance_report,
+                "seo_report":        seo_report,
+                "overall_score":     overall_score,
+            }).execute()
+        except Exception as e:
+            log.warning("[db] save_page_audit: %s", e)
+
+
+def complete_audit_session(
+    audit_session_id: str,
+    overall_score: Optional[float],
+) -> None:
+    """Mark an audit_sessions row as complete."""
+    import datetime
+    client = _get_client()
+    if client:
+        try:
+            client.table("audit_sessions").update({
+                "status":       "complete",
+                "overall_score": overall_score,
+                "completed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            }).eq("id", audit_session_id).execute()
+        except Exception as e:
+            log.warning("[db] complete_audit_session: %s", e)

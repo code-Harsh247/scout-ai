@@ -9,10 +9,19 @@ import {
   type UiReport,
   type UxReport,
 } from "@/hooks/useAuditStream";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 type AgentId = "ui" | "ux" | "compliance" | "seo";
 type TabId = "overall" | AgentId;
 type AgentStatus = "processing" | "complete";
+
+/** Pre-loaded reports — passed in lieu of SSE (read-only mode). */
+export interface PreloadedReports {
+  uiReport:         UiReport         | null;
+  uxReport:         UxReport         | null;
+  complianceReport: ComplianceReport | null;
+  seoReport:        SeoReport        | null;
+}
 
 type AgentState = {
   progress: number;
@@ -219,11 +228,30 @@ function buildSeoChecks(report: SeoReport | null): Check[] {
   }));
 }
 
-export default function AnalysisDashboard() {
+export default function AnalysisDashboard({ reports }: { reports?: PreloadedReports }) {
   const params = useSearchParams();
-  const targetUrl = params.get("url") || "your-website.com";
+  const targetUrl = params.get("url") || "";
 
-  const { uiReport, uxReport, complianceReport, seoReport, isDone, error } = useAuditStream(targetUrl);
+  const { accessToken } = useSupabaseSession();
+
+  // When preloaded reports are provided, pass an empty URL to the hook so it
+  // does not start an SSE stream.  The hook short-circuits on empty strings.
+  const streamUrl = reports ? "" : (targetUrl || "your-website.com");
+  const {
+    uiReport:         streamedUi,
+    uxReport:         streamedUx,
+    complianceReport: streamedCompliance,
+    seoReport:        streamedSeo,
+    isDone:           streamedDone,
+    error,
+  } = useAuditStream(streamUrl, accessToken);
+
+  // Use preloaded reports when available, otherwise fall back to streamed data.
+  const uiReport         = reports?.uiReport         ?? streamedUi;
+  const uxReport         = reports?.uxReport         ?? streamedUx;
+  const complianceReport = reports?.complianceReport ?? streamedCompliance;
+  const seoReport        = reports?.seoReport        ?? streamedSeo;
+  const isDone           = !!reports || streamedDone;
 
   const [agentStates, setAgentStates] = useState<Record<AgentId, AgentState>>(() => ({
     ui: { progress: 0, status: "processing", line: AGENT_MESSAGES.ui[0] },
@@ -375,12 +403,12 @@ export default function AnalysisDashboard() {
             </div>
             <h1 className="text-2xl font-bold text-text">AI Analysis Dashboard</h1>
           </div>
-          <a href="/" className="text-text-sub text-sm hover:text-text transition-colors flex items-center gap-1.5 mt-1">
+          <button onClick={() => window.history.back()} className="text-text-sub text-sm hover:text-text transition-colors flex items-center gap-1.5 mt-1">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
-            New analysis
-          </a>
+            Back
+          </button>
         </div>
 
         {error && (
@@ -671,16 +699,65 @@ export default function AnalysisDashboard() {
         )}
 
         {!showResults && (
-          <div className="animate-fade-in text-center py-12">
-            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full glass-card">
-              <div className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
+          <section className="animate-fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <p className="text-text-sub text-xs font-medium tracking-widest uppercase">Analysis Report</p>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <span
+                className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}
+              >
+                Processing…
+              </span>
+            </div>
+
+            {/* Skeleton cards */}
+            <div className="grid lg:grid-cols-3 gap-5">
+              <div className="glass-card rounded-xl p-6">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-35 h-35 rounded-full" style={{ background: "rgba(255,255,255,0.04)" }} />
+                  <div className="w-full space-y-3">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="h-2 w-16 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }} />
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                          <div
+                            className="h-full rounded-full animate-shimmer"
+                            style={{
+                              width: "60%",
+                              backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%)",
+                              backgroundSize: "200% 100%",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-2 space-y-4">
+                {[0, 1].map((i) => (
+                  <div key={i} className="glass-card rounded-xl p-6">
+                    <div className="h-4 w-32 mb-4 rounded" style={{ background: "rgba(255,255,255,0.06)" }} />
+                    <div className="space-y-3">
+                      {[0, 1, 2].map((j) => (
+                        <div key={j} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div
+                            className="h-3 rounded animate-shimmer"
+                            style={{
+                              width: `${60 + j * 15}%`,
+                              backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%)",
+                              backgroundSize: "200% 100%",
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
-              <span className="text-text-sub text-sm">Agents working in parallel...</span>
             </div>
-          </div>
+          </section>
         )}
       </div>
     </div>

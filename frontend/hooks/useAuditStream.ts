@@ -116,7 +116,7 @@ export interface AuditStreamResult {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-export function useAuditStream(targetUrl: string): AuditStreamResult {
+export function useAuditStream(targetUrl: string, accessToken?: string | null): AuditStreamResult {
   const [uiReport, setUiReport]   = useState<UiReport | null>(null);
   const [uxReport, setUxReport]   = useState<UxReport | null>(null);
   const [complianceReport, setComplianceReport] = useState<ComplianceReport | null>(null);
@@ -127,6 +127,28 @@ export function useAuditStream(targetUrl: string): AuditStreamResult {
 
   useEffect(() => {
     if (!targetUrl) return;
+
+    // If the caller saved results to sessionStorage (e.g. via the CrawlerDashboard
+    // "View" link), restore them immediately and skip the API call entirely.
+    try {
+      const cached = sessionStorage.getItem(`scout_audit_v1_${targetUrl}`);
+      if (cached) {
+        const data = JSON.parse(cached) as {
+          uiReport?: UiReport;
+          uxReport?: UxReport;
+          complianceReport?: ComplianceReport;
+          seoReport?: SeoReport;
+        };
+        setUiReport(data.uiReport ?? null);
+        setUxReport(data.uxReport ?? null);
+        setComplianceReport(data.complianceReport ?? null);
+        setSeoReport(data.seoReport ?? null);
+        setIsLoading(false);
+        setIsDone(true);
+        setError(null);
+        return; // no cleanup needed — no AbortController was created
+      }
+    } catch { /* sessionStorage unavailable or corrupt — fall through */ }
 
     // Reset state so a re-run (e.g. React Strict Mode double-invoke) starts clean
     setUiReport(null);
@@ -145,7 +167,10 @@ export function useAuditStream(targetUrl: string): AuditStreamResult {
       try {
         const response = await fetch(`${API_URL}/audit`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
           body: JSON.stringify({ url: targetUrl }),
           signal: abortController.signal,
         });

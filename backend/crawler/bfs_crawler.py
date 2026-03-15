@@ -258,6 +258,7 @@ class BFSCrawler:
         # ── Playwright fetch ────────────────────────────────────────────────
         html = ''
         status_code: Optional[int] = None
+        screenshot_b64: Optional[str] = None
 
         async with page_sem:
             ctx = await browser.new_context(
@@ -280,10 +281,11 @@ class BFSCrawler:
                         quality=45,
                         clip={'x': 0, 'y': 0, 'width': 1280, 'height': 720},
                     )
+                    screenshot_b64 = base64.b64encode(shot).decode()
                     self._emit({
                         'type': 'page_screenshot',
                         'url': url,
-                        'data': base64.b64encode(shot).decode(),
+                        'data': screenshot_b64,
                     })
                 except Exception as se:
                     log.debug('[crawler] screenshot %s: %s', url, se)
@@ -326,6 +328,7 @@ class BFSCrawler:
         page_id = await asyncio.to_thread(
             db.insert_page, self.session_id, url, url_pattern,
             is_template_rep, status_code, page_title, dom_hash, depth,
+            screenshot_b64,
         )
 
         if new_pattern:

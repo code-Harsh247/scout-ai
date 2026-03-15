@@ -93,6 +93,8 @@ const MAX_FEED_ITEMS = 500;
 export function useCrawlStream(
   targetUrl: string,
   options?: Record<string, unknown>,
+  accessToken?: string | null,
+  existingSessionId?: string,
 ): CrawlStreamResult {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [crawlStatus, setCrawlStatus] = useState<CrawlStatus>("idle");
@@ -122,9 +124,153 @@ export function useCrawlStream(
     });
   }, []);
 
+  // Persist finished crawl so back-navigation can restore state without re-crawling.
+  useEffect(() => {
+    if (crawlStatus !== "complete") return;
+    try {
+      sessionStorage.setItem(
+        `scout_crawl_v1_${targetUrl}`,
+        JSON.stringify({
+          sessionId,
+          stats,
+          pages:        [...pages.entries()],
+          brokenLinks,
+          graphLinks,
+        }),
+      );
+    } catch { /* sessionStorage quota exceeded — ignore */ }
+    // Only fires when crawlStatus flips to "complete"; other values are already
+    // committed by that render so ESLint exhaustive-deps is intentionally relaxed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [crawlStatus, targetUrl]);
+
   useEffect(() => {
     if (!targetUrl) return;
 
+    // Restore a previously completed crawl instead of re-crawling.
+    try {
+      const cached = sessionStorage.getItem(`scout_crawl_v1_${targetUrl}`);
+      if (cached) {
+        const data = JSON.parse(cached) as {
+          sessionId:        string | null;
+          stats:            CrawlStats;
+          pages:            [string, CrawledPage][];
+          brokenLinks:      BrokenLink[];
+          graphLinks:       GraphLink[];
+        };
+        setSessionId(data.sessionId ?? null);
+        setCrawlStatus("complete");
+        setStats(data.stats ?? { visited: 0, skipped: 0, broken: 0, templates: 0 });
+        setPages(new Map(data.pages ?? []));
+        setBrokenLinks(data.brokenLinks ?? []);
+        setGraphLinks(data.graphLinks ?? []);
+        setActiveUrl(null);
+        return;
+      }
+    } catch { /* corrupt cache — fall through to normal crawl */ }
+
+    // ── Load existing crawl from DB when a session ID is provided ──────────
+    if (existingSessionId) {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setCrawlStatus("running");
+
+      async function loadFromDb() {
+        try {
+          const headers: Record<string, string> = {};
+          if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+          const [sessionRes, pagesRes, brokenRes, templatesRes, linksRes] = await Promise.all([
+            fetch(`${API_URL}/crawl/${existingSessionId}`, { headers, signal: controller.signal }),
+            fetch(`${API_URL}/crawl/${existingSessionId}/pages?limit=5000`, { headers, signal: controller.signal }),
+            fetch(`${API_URL}/crawl/${existingSessionId}/broken-links`, { headers, signal: controller.signal }),
+            fetch(`${API_URL}/crawl/${existingSessionId}/templates`, { headers, signal: controller.signal }),
+            fetch(`${API_URL}/crawl/${existingSessionId}/links?limit=10000`, { headers, signal: controller.signal }),
+          ]);
+
+          if (controller.signal.aborted) return;
+
+          const sessionData = await sessionRes.json();
+          const pagesData   = await pagesRes.json();
+          const brokenData  = await brokenRes.json();
+          const tmplData    = await templatesRes.json();
+          const linksData   = await linksRes.json();
+
+          if (sessionData.error || pagesData.error) {
+            throw new Error(sessionData.error || pagesData.error);
+          }
+
+          // Map DB pages → CrawledPage + collect screenshots
+          const pageMap = new Map<string, CrawledPage>();
+          const screenshotMap = new Map<string, string>();
+          for (const p of (pagesData.pages ?? []) as { url: string; url_pattern: string | null; is_template_representative: boolean; status_code: number | null; depth: number; screenshot_b64?: string | null }[]) {
+            pageMap.set(p.url, {
+              url: p.url,
+              urlPattern: p.url_pattern ?? null,
+              status: "visited",
+              statusCode: p.status_code ?? null,
+              isTemplateRepresentative: p.is_template_representative ?? false,
+              depth: p.depth ?? 0,
+              linksFound: 0,
+              brokenLinksFound: 0,
+            });
+            if (p.screenshot_b64) {
+              screenshotMap.set(p.url, `data:image/jpeg;base64,${p.screenshot_b64}`);
+            }
+          }
+
+          // Map DB broken links → BrokenLink[]
+          const bl: BrokenLink[] = ((brokenData.broken_links ?? []) as { to_url: string; link_status: string; status_code: number | null; from_page_id: string }[]).map((l) => ({
+            url: l.to_url,
+            fromUrl: "",
+            fromPageTitle: "",
+            statusCode: l.status_code ?? null,
+            errorType: l.link_status ?? "",
+          }));
+
+          // Map DB templates → TemplatePattern[]
+          const tp: TemplatePattern[] = ((tmplData.templates ?? []) as { url_pattern: string; representative_url: string; estimated_total: number }[]).map((t) => ({
+            pattern: t.url_pattern,
+            representativeUrl: t.representative_url ?? "",
+            estimatedTotal: t.estimated_total ?? 0,
+          }));
+
+          // Map DB links → GraphLink[] for the force-directed graph
+          const gl: GraphLink[] = ((linksData.links ?? []) as { from_url: string; to_url: string; is_broken: boolean; is_internal: boolean }[])
+            .filter((l) => l.from_url && l.is_internal)
+            .map((l) => ({
+              source: l.from_url,
+              target: l.to_url,
+              isBroken: l.is_broken,
+            }));
+
+          setSessionId(existingSessionId ?? null);
+          setStats({
+            visited:   sessionData.pages_visited   ?? pageMap.size,
+            skipped:   sessionData.pages_skipped   ?? 0,
+            broken:    sessionData.broken_links_found ?? bl.length,
+            templates: tp.length,
+          });
+          setPages(pageMap);
+          setBrokenLinks(bl);
+          setTemplatePatterns(tp);
+          setGraphLinks(gl);
+          setScreenshots(screenshotMap);
+          setActiveUrl(null);
+          setCrawlStatus("complete");
+        } catch (err) {
+          if (err instanceof Error && err.name === "AbortError") return;
+          setError(err instanceof Error ? err.message : String(err));
+          setCrawlStatus("failed");
+        }
+      }
+
+      loadFromDb();
+      return () => controller.abort();
+    }
+
+    // ── Fresh crawl (no cache, no existing session) ────────────────────────
     // Reset
     setSessionId(null);
     setCrawlStatus("running");
@@ -146,7 +292,10 @@ export function useCrawlStream(
       try {
         const response = await fetch(`${API_URL}/crawl`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
           body: JSON.stringify({ url: targetUrl, options: options ?? {} }),
           signal: controller.signal,
         });
@@ -360,7 +509,7 @@ export function useCrawlStream(
     return () => controller.abort();
     // options is intentionally excluded — we only restart when targetUrl changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetUrl]);
+  }, [targetUrl, existingSessionId]);
 
   return {
     sessionId,
