@@ -81,7 +81,7 @@ Supabase PostgreSQL
       audit_results / user profiles
 ```
 
-![Architecture Diagram](./arch.svg)
+![Architecture Diagram](./arch.png)
 
 ### LangGraph fan-out
 
