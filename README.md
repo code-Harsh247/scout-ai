@@ -382,16 +382,6 @@ Migrations live in `backend/supabase_migrations/` and are safe to run on a fresh
 | `audit_results` | Full audit report JSON per page per session |
 | `profiles` | Supabase auth user profiles |
 
-Run migrations in order:
-```bash
-# In your Supabase SQL editor or via CLI:
-phase3.sql          # base tables
-phase4_screenshots.sql
-phase5_security.sql
-phase6_audit_screenshots.sql
-phase7_drop_profile_fk.sql
-```
-
 ---
 
 ## Demo Site
@@ -406,25 +396,6 @@ Pages included: landing, pricing, products (3 variants), blog (3 posts), docs, a
 
 ---
 
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for the full technical design doc.
-
-**Completed phases:**
-- ✅ Phase 1 — Smart BFS site crawler with live visualisation
-- ✅ Phase 2 — Multi-page agent pipeline with parallel per-page audits
-- ✅ Phase 3 — Supabase auth + persistent audit history
-- ✅ Phase 4 — Screenshot capture + live preview panel
-- ✅ Phase 5 — Passive security agent (headers, CSP, cookies)
-- ✅ Phase 6 — Phased AI fix prompt generator
-
-**Upcoming:**
-- Active security checks (authenticated scan mode)
-- Scheduled re-audits and regression tracking
-- Slack / GitHub issue integration for findings
-- Self-hosted LLM option
-
----
 
 ## Contributing
 
