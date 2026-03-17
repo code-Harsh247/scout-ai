@@ -8,6 +8,8 @@ import httpx
 from bs4 import BeautifulSoup
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, sync_playwright
 
+from tools.evidence_collector import collect_evidence
+
 log = logging.getLogger("scout")
 
 
@@ -133,9 +135,11 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
     """
     html = ""
     screenshot_base64 = None
+    screenshot_bytes = b""
     final_url = url
     page_timing_ms: Dict[str, Any] = {}
     computed_styles: Dict[str, str] = {}
+    evidence_blobs: Dict[str, list] = {}
 
     try:
         with sync_playwright() as p:
@@ -220,6 +224,14 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
             except Exception as e:
                 log.warning("[scraper] Failed to extract computed styles: %s", e)
 
+            # --- Evidence Collection (must happen before browser.close) ---
+            if screenshot_bytes:
+                try:
+                    evidence_blobs = collect_evidence(page, screenshot_bytes)
+                    log.info("[scraper] evidence collection complete")
+                except Exception as e:
+                    log.warning("[scraper] Evidence collection failed: %s", e)
+
             browser.close()
 
     except Exception as exc:
@@ -254,6 +266,7 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
                 "meta_tags": {},
                 "page_timing_ms": {},
                 "computed_styles": {},
+                "evidence_blobs": {},
             }
 
     # --- Accessibility Summary (tag-level, lightweight) ---
@@ -286,4 +299,5 @@ def capture_website_context(url: str, viewport_width: int = 1280, viewport_heigh
         "meta_tags": rich_ctx.get("meta_tags", {}),
         "page_timing_ms": page_timing_ms,
         "computed_styles": computed_styles,
+        "evidence_blobs": evidence_blobs,
     }

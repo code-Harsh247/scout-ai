@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore TechNova's AI, Cloud, and Cybersecurity product suite. Enterprise-ready tools for every team.">
+  <title>Products — TechNova</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html" class="active">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="products-section">
+    <h1>Our Products</h1>
+
+    <div class="product-grid">
+
+      <!-- AI Product -->
+      <div class="product-card" id="ai">
+        <!-- ISSUE [Accessibility]: Image has no alt text -->
+        <img src="https://placehold.co/400x220/1a1a2e/e94560?text=NovaMind+AI">
+        <div class="product-card-body">
+          <h3>NovaMind AI</h3>
+          <p>
+            Our flagship AI platform uses large language models to automate repetitive tasks, surface insights from your data, and predict business outcomes with 94% accuracy.
+          </p>
+          <!-- ISSUE [Accessibility / UX]: All product CTAs say "Learn More" — no context for screen readers -->
+          <a href="#"><button class="btn-primary">Learn More</button></a>
+        </div>
+      </div>
+
+      <!-- Cloud Product -->
+      <div class="product-card" id="cloud">
+        <!-- ISSUE [Accessibility]: Image has no alt text -->
+        <img src="https://placehold.co/400x220/16213e/00d2ff?text=NovaCloud">
+        <div class="product-card-body">
+          <h3>NovaCloud</h3>
+          <p>
+            Deploy, scale, and manage your applications globally with NovaCloud. Built on Kubernetes with auto-scaling, zero-downtime deployments, and 99.99% SLA.
+          </p>
+          <!-- ISSUE [UX]: No pricing mentioned on product page — forces extra navigation -->
+          <a href="#"><button class="btn-primary">Learn More</button></a>
+        </div>
+      </div>
+
+      <!-- Security Product -->
+      <div class="product-card" id="security">
+        <!-- ISSUE [Accessibility]: Image has no alt text -->
+        <img src="https://placehold.co/400x220/0f3460/4ecca3?text=NovaShield">
+        <div class="product-card-body">
+          <h3>NovaShield</h3>
+          <p>
+            End-to-end cybersecurity for your entire stack. Real-time threat detection, vulnerability scanning, and compliance reporting for SOC2, ISO 27001, and GDPR.
+          </p>
+          <a href="#"><button class="btn-primary">Learn More</button></a>
+        </div>
+      </div>
+
+      <!-- Keyboard product 1 — intentional template-duplicate for crawler testing -->
+      <div class="product-card" id="keyboard-1">
+        <img src="https://placehold.co/400x220/1a1a2e/f59e0b?text=NovaKey+Pro" alt="NovaKey Pro mechanical keyboard">
+        <div class="product-card-body">
+          <h3>NovaKey Pro</h3>
+          <p>
+            Mechanical keyboard with Cherry MX switches, per-key RGB, and USB-C connectivity. Built for developers who type all day.
+          </p>
+          <!-- ISSUE [UX]: Still "Learn More" — identical to all other CTAs -->
+          <a href="product-keyboard-1.html"><button class="btn-primary">Learn More</button></a>
+        </div>
+      </div>
+
+      <!-- Keyboard product 2 — same template as keyboard-1, tests dedup -->
+      <div class="product-card" id="keyboard-2">
+        <img src="https://placehold.co/400x220/1a1a2e/a78bfa?text=NovaKey+Lite" alt="NovaKey Lite keyboard">
+        <div class="product-card-body">
+          <h3>NovaKey Lite</h3>
+          <p>
+            Compact 65% layout with quiet Brown switches. Ideal for office environments and lightweight travel use.
+          </p>
+          <a href="product-keyboard-2.html"><button class="btn-primary">Learn More</button></a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ISSUE [SEO / UX]: No comparison table — users can't easily diff products -->
+    <!-- ISSUE [SEO]: No internal link to pricing from products page -->
+
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h5>TechNova</h5>
+        <p>Building the future, one line of code at a time.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 TechNova Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

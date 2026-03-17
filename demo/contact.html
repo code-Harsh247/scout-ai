@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact TechNova support for product questions, billing enquiries, and enterprise onboarding. We're here 24/7.">
+  <title>Contact Us — TechNova</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechNova</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="contact-section">
+    <h1>Get in Touch</h1>
+    <p style="text-align:center; color:#888;">Our team will get back to you within 24 hours.</p>
+
+    <!-- ISSUE [Compliance]: No physical address or company registration shown -->
+    <!-- ISSUE [UX]: No phone number — only form contact -->
+
+    <div class="contact-form">
+      <form action="#" method="POST">
+
+        <!-- ISSUE [Accessibility]: labels present but missing `for` attr — not linked to inputs -->
+        <label>Full Name</label>
+        <!-- ISSUE: no id on inputs — cannot be associated with label -->
+        <input type="text" placeholder="Jane Smith" required>
+
+        <label>Email Address</label>
+        <input type="email" placeholder="jane@company.com" required>
+
+        <label>Subject</label>
+        <!-- ISSUE [UX]: Select dropdown has no default empty/placeholder option — auto-selects "General Enquiry" -->
+        <select style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;margin-bottom:1rem;font-size:0.95rem;">
+          <option>General Enquiry</option>
+          <option>Billing Support</option>
+          <option>Technical Issue</option>
+          <option>Sales</option>
+        </select>
+
+        <label>Message</label>
+        <!-- ISSUE [UX]: No maxlength, no character counter, open-ended textarea -->
+        <textarea placeholder="Describe your question or issue..." rows="6"></textarea>
+
+        <!-- ISSUE [Compliance - Dark Pattern]: Pre-ticked consent again -->
+        <label class="checkbox-label" style="margin-bottom:1rem;">
+          <input type="checkbox" checked>
+          I consent to TechNova storing my data and sending me follow-up emails
+        </label>
+
+        <!-- ISSUE [Compliance]: No link to Privacy Policy or data retention info near submission -->
+        <!-- ISSUE [UX]: No CAPTCHA — bot-prone form -->
+        <button type="submit" class="btn-primary" style="width:100%">Send Message</button>
+
+      </form>
+    </div>
+
+    <!-- ISSUE [SEO]: No schema.org LocalBusiness or ContactPoint markup -->
+    <!-- ISSUE [UX]: No confirmation message or redirect explained to user -->
+
+    <div style="margin-top:2rem; padding:1.5rem; background:#fff; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+      <!-- ISSUE [Compliance]: "support@technova.io" is a fake address — no real contact -->
+      <p style="font-size:0.9rem;"><strong>Email:</strong> <a href="mailto:support@technova.io">support@technova.io</a></p>
+      <!-- ISSUE [UI]: Address displayed as plain text with inline style — not in a semantic address element -->
+      <p style="font-size:0.9rem; margin-top:0.5rem;"><strong>Hours:</strong> Mon–Fri, 9am–6pm PST</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h5>TechNova</h5>
+        <p>Building the future, one line of code at a time.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 TechNova Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

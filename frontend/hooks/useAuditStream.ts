@@ -7,9 +7,20 @@ import type { PhasePrompt } from "@/hooks/useSiteAuditStream";
 // Types — mirror the backend JSON schemas exactly
 // ---------------------------------------------------------------------------
 
+export interface Evidence {
+  check_key: string;
+  label?: string;           // Human-readable screenshot title
+  description: string;
+  recommended_fix?: string; // One-line fix hint shown in lightbox
+  image_base64: string;
+  element_selector?: string;
+}
+
 export interface AuditCategory {
   score: number;       // 1–10
-  findings: string;
+  findings: string[];  // Array of concise bullet strings
+  recommended_fix?: string;
+  evidence?: Evidence[];
 }
 
 export interface UiReport {
@@ -34,11 +45,13 @@ export interface UxReport {
 
 export interface ComplianceRiskCategory {
   risk_level: "Low" | "Medium" | "High" | string;
-  findings: string;
+  findings: string[];
+  recommended_fix?: string;
+  evidence?: Evidence[];
 }
 
 export interface ComplianceReport {
-  overall_risk_score: number; // 1-10 where lower is better
+  overall_risk_score: number;
   data_privacy: ComplianceRiskCategory;
   legal_transparency: ComplianceRiskCategory;
   accessibility_compliance: ComplianceRiskCategory;
@@ -52,33 +65,51 @@ export interface SeoFactor {
 }
 
 export interface SeoReport {
-  overall_score: number; // 1-10
+  overall_score: number;
   universal_factors: Record<string, SeoFactor>;
   search_intent: {
     primary_intent: string;
     top_entities: string[];
     target_keyword_suggestion: string;
   };
-  intent_alignment: {
-    status: string;
-    explanation: string;
-  };
-  competitor_gap: {
-    missing_crucial_entities: string[];
-  };
+  intent_alignment: { status: string; explanation: string };
+  competitor_gap: { missing_crucial_entities: string[] };
   recommendations: string[];
   error?: string;
 }
 
 // ---------------------------------------------------------------------------
-// SSE event shapes from backend
+// Multi-page types
 // ---------------------------------------------------------------------------
 
-type SseUiResultEvent  = { type: "ui_result"; ui_report: UiReport };
-type SseUxResultEvent  = { type: "ux_result"; ux_report: UxReport };
-type SseComplianceResultEvent = { type: "compliance_result"; compliance_report: ComplianceReport };
-type SseSeoResultEvent = { type: "seo_result"; seo_report: SeoReport };
-type SseResultEvent    = {
+export interface DiscoveredPage {
+  url: string;
+  page_type: string;
+}
+
+export interface PageAuditResult {
+  url: string;
+  page_type: string;
+  ui_report: UiReport | null;
+  ux_report: UxReport | null;
+  compliance_report: ComplianceReport | null;
+  seo_report: SeoReport | null;
+}
+
+export interface SiteReport {
+  pages_analysed: number;
+  page_urls: string[];
+  ui_report: UiReport;
+  ux_report: UxReport;
+  compliance_report: ComplianceReport;
+  seo_report: SeoReport;
+}
+
+// ---------------------------------------------------------------------------
+// SSE event shapes
+// ---------------------------------------------------------------------------
+
+type SseResultEvent = {
   type: "result";
   ui_report?: UiReport;
   ux_report?: UxReport;
@@ -86,16 +117,14 @@ type SseResultEvent    = {
   seo_report?: SeoReport;
   screenshot_base64?: string | null;
 };
-type SseErrorEvent     = { type: "error"; message: string };
+type SseErrorEvent = { type: "error"; message: string };
 
 type SseEvent =
-  | { type: "status"; [key: string]: unknown }  // ignored
-  | SseUiResultEvent
-  | SseUxResultEvent
-  | SseComplianceResultEvent
-  | SseSeoResultEvent
+  | SsePagesDiscoveredEvent
+  | SsePageCompleteEvent
   | SseResultEvent
-  | SseErrorEvent;
+  | SseErrorEvent
+  | { type: "status"; [key: string]: unknown };
 
 // ---------------------------------------------------------------------------
 // Public hook return type
@@ -108,7 +137,6 @@ export interface AuditStreamResult {
   seoReport: SeoReport | null;
   screenshotUrl: string | null;
   isLoading: boolean;
-  /** Final `type: "result"` received */
   isDone: boolean;
   error: string | null;
   phasedPrompts: PhasePrompt[];
@@ -174,7 +202,6 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
 
     async function stream() {
       setIsLoading(true);
-
       try {
         const response = await fetch(`${API_URL}/audit`, {
           method: "POST",
@@ -190,33 +217,25 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
           const text = await response.text();
           throw new Error(`HTTP ${response.status}: ${text}`);
         }
+        if (!response.body) throw new Error("No response body — streaming not supported");
 
-        if (!response.body) {
-          throw new Error("No response body — streaming not supported");
-        }
-
-        const reader  = response.body.getReader();
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let   buffer  = "";
+        let buffer = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-
-          // SSE messages are separated by double newlines
           const parts = buffer.split("\n\n");
-          // Keep the last incomplete chunk in the buffer
           buffer = parts.pop() ?? "";
 
           for (const part of parts) {
             const line = part.trim();
             if (!line.startsWith("data:")) continue;
-
             const jsonStr = line.slice("data:".length).trim();
             if (!jsonStr) continue;
-
             let event: SseEvent;
             try {
               event = JSON.parse(jsonStr) as SseEvent;
@@ -224,7 +243,6 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
               console.warn("[useAuditStream] Failed to parse SSE chunk:", jsonStr);
               continue;
             }
-
             handleEvent(event);
           }
         }
@@ -238,26 +256,12 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
 
     function handleEvent(event: SseEvent) {
       switch (event.type) {
-        case "status":
-          // Agent card animations are fully mocked — ignore status events
+        case "pages_discovered":
+          setDiscoveredPages(event.pages);
           break;
-
-        case "ui_result":
-          setUiReport(event.ui_report);
+        case "page_complete":
+          setCompletedPageUrls((prev) => new Set([...prev, event.url]));
           break;
-
-        case "ux_result":
-          setUxReport(event.ux_report);
-          break;
-
-        case "compliance_result":
-          setComplianceReport(event.compliance_report);
-          break;
-
-        case "seo_result":
-          setSeoReport(event.seo_report);
-          break;
-
         case "result":
           if (event.ui_report) setUiReport(event.ui_report);
           if (event.ux_report) setUxReport(event.ux_report);
@@ -273,10 +277,11 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
             event.seo_report ?? null,
           );
           break;
-
         case "error":
           setError(event.message);
           setIsLoading(false);
+          break;
+        default:
           break;
       }
     }

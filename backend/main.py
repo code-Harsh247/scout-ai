@@ -46,68 +46,40 @@ class ScoutState(TypedDict):
     security_report: dict
 
 # ---------------------------------------------------------------------------
-# 2. Graph nodes
+# 2. Single-page audit helper (reusable across threads)
 # ---------------------------------------------------------------------------
 
-def scrape_node(state: ScoutState) -> dict:
-    """Fetch page context (DOM, screenshot, accessibility signals)."""
-    url = state["target_url"]
-    log.info("[scrape] START  %s", url)
+def _audit_single_page(url: str, page_type: str) -> dict:
+    """
+    Run the full 4-agent audit pipeline for one URL.
+    Returns a dict compatible with PageAuditResult.
+    Errors on individual agents are caught and stored as {"error": "..."}.
+    """
+    result = {"url": url, "page_type": page_type,
+              "ui_report": None, "ux_report": None,
+              "compliance_report": None, "seo_report": None}
+
+    log.info("[multi_audit] START  %s (%s)", url, page_type)
     t0 = time.perf_counter()
+
+    # --- Scrape ---
     context = capture_website_context(url)
-    elapsed = time.perf_counter() - t0
     if context.get("error"):
-        log.error("[scrape] ERROR  %.1fs  %s", elapsed, context["error"])
-    else:
-        dom_len = len(context.get("dom", ""))
-        has_ss = bool(context.get("screenshot_base64"))
-        log.info("[scrape] DONE   %.1fs  dom=%d chars  screenshot=%s", elapsed, dom_len, has_ss)
-    return {"page_context": context}
+        log.error("[multi_audit] SCRAPE ERROR  %s  %s", url, context["error"])
+        return result
 
+    # --- 4 agents ---
+    try:
+        result["ui_report"] = run_ui_audit(url, context)
+    except Exception as exc:
+        log.error("[multi_audit] ui_agent error for %s: %s", url, exc)
+        result["ui_report"] = {"error": str(exc)}
 
-def ui_audit_node(state: ScoutState) -> dict:
-    """Run the UI audit (Gemini 2.5 Flash + vision)."""
-    log.info("[ui_auditor] START  model=gemini-2.5-flash")
-    t0 = time.perf_counter()
-    report = run_ui_audit(state["target_url"], state["page_context"])
-    elapsed = time.perf_counter() - t0
-    if "error" in report:
-        log.error("[ui_auditor] ERROR  %.1fs  %s", elapsed, report["error"])
-    else:
-        log.info("[ui_auditor] DONE   %.1fs  overall_score=%s", elapsed, report.get("overall_score"))
-    return {"ui_report": report}
-
-
-def ux_audit_node(state: ScoutState) -> dict:
-    """Run the UX audit (Llama 3.3 70B via Gradient)."""
-    log.info("[ux_auditor] START  model=llama3.3-70b-instruct")
-    t0 = time.perf_counter()
-    report = run_ux_audit(state["target_url"], state["page_context"])
-    elapsed = time.perf_counter() - t0
-    if "error" in report:
-        log.error("[ux_auditor] ERROR  %.1fs  %s", elapsed, report["error"])
-    else:
-        log.info("[ux_auditor] DONE   %.1fs  overall_score=%s", elapsed, report.get("overall_score"))
-    return {"ux_report": report}
-
-
-def compliance_audit_node(state: ScoutState) -> dict:
-    """Run the compliance audit (Llama 3.3 70B via Gradient)."""
-    log.info("[compliance_auditor] START  model=llama3.3-70b-instruct")
-    t0 = time.perf_counter()
-    report = run_compliance_audit(state["target_url"], state["page_context"])
-    elapsed = time.perf_counter() - t0
-    if "error" in report:
-        log.error("[compliance_auditor] ERROR  %.1fs  %s", elapsed, report["error"])
-    else:
-        log.info("[compliance_auditor] DONE   %.1fs  overall_risk_score=%s", elapsed, report.get("overall_risk_score"))
-    return {"compliance_report": report}
-
-
-def seo_audit_node(state: ScoutState) -> dict:
-    """Run the SEO audit (Llama 3.3 70B via Gradient + scraper checks)."""
-    log.info("[seo_auditor] START  model=llama3.3-70b-instruct")
-    t0 = time.perf_counter()
+    try:
+        result["ux_report"] = run_ux_audit(url, context)
+    except Exception as exc:
+        log.error("[multi_audit] ux_agent error for %s: %s", url, exc)
+        result["ux_report"] = {"error": str(exc)}
 
     url = state["target_url"]
     page_context = state["page_context"]
@@ -161,10 +133,43 @@ def merge_node(state: ScoutState) -> dict:
     return {}
 
 # ---------------------------------------------------------------------------
-# 3. Build the LangGraph
+# 3. Aggregation helper
 # ---------------------------------------------------------------------------
 
-workflow = StateGraph(ScoutState)
+def _safe_avg(values: list) -> int:
+    clean = [v for v in values if isinstance(v, (int, float)) and v > 0]
+    return round(sum(clean) / len(clean)) if clean else 1
+
+
+def _merge_lists(*lists, cap=10) -> list:
+    seen = set()
+    merged = []
+    for lst in lists:
+        for item in (lst or []):
+            key = item.strip().lower()
+            if key not in seen:
+                seen.add(key)
+                merged.append(item)
+    return merged[:cap]
+
+
+def _aggregate_score_result(checks: list[dict], key: str) -> dict:
+    """Average a ScoreResult field across all pages that have it."""
+    scores, all_findings, fixes, all_evidence = [], [], [], []
+    worst_score, worst_fix = 11, ""
+    for c in checks:
+        if not c or "error" in c:
+            continue
+        sr = c.get(key, {})
+        if not sr or "error" in sr:
+            continue
+        s = sr.get("score", 0)
+        scores.append(s)
+        all_findings.extend(sr.get("findings", []))
+        fix = sr.get("recommended_fix", "")
+        if s < worst_score and fix:
+            worst_score, worst_fix = s, fix
+        all_evidence.extend(sr.get("evidence", []))
 
 workflow.add_node("scrape", scrape_node)
 workflow.add_node("ui_auditor", ui_audit_node)
@@ -174,7 +179,6 @@ workflow.add_node("seo_auditor", seo_audit_node)
 workflow.add_node("security_auditor", security_audit_node)
 workflow.add_node("merge", merge_node)
 
-workflow.set_entry_point("scrape")
 
 # Fan-out: scrape -> ui/ux/compliance/seo/security (parallel)
 workflow.add_edge("scrape", "ui_auditor")
@@ -209,7 +213,7 @@ _site_workflow.add_edge("merge", END)
 scout_graph_no_security = _site_workflow.compile()
 
 # ---------------------------------------------------------------------------
-# 4. FastAPI + SSE streaming
+# 6. FastAPI + SSE streaming
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="Scout.ai")
@@ -306,14 +310,75 @@ async def _stream_audit(url: str):
     loop = asyncio.get_event_loop()
     log.info("[request] AUDIT START  url=%s", url)
     t_total = time.perf_counter()
-    try:
-        result = await loop.run_in_executor(_executor, lambda: _run_graph(url))
 
-        if "error" in result:
-            yield _sse({"type": "error", "message": result["error"]})
+    # We use a simpler direct approach: run each graph step and yield SSE
+    try:
+        # Run in executor to avoid blocking
+        pages: list = []
+        page_results: list = []
+        site_report: dict = {}
+
+        def run_sync():
+            nonlocal pages, page_results, site_report
+            for event in scout_graph.stream({"target_url": url}, stream_mode="updates"):
+                for node_name, update in event.items():
+                    if node_name == "page_discovery":
+                        pages[:] = update.get("pages", [])
+                    elif node_name == "multi_page_audit":
+                        page_results[:] = update.get("page_results", [])
+                    elif node_name == "aggregate":
+                        site_report.update(update.get("site_report", {}))
+
+        # Phase 1: discovery (fast, just crawl links)
+        # We can't easily stream mid-graph from a thread, so we split manually:
+
+        # Discover pages
+        discovered = await loop.run_in_executor(_executor,
+            lambda: discover_pages(url, max_pages=6, max_depth=3))
+
+        if not discovered:
+            yield _sse({"type": "error", "message": "Could not discover any pages"})
             return
 
+        yield _sse({"type": "pages_discovered", "pages": discovered})
+
+        # Audit each page in parallel
+        results: list = [None] * len(discovered)
+
+        def _audit_with_notify(page_info, idx, total):
+            res = _audit_single_page(page_info["url"], page_info["page_type"])
+            return idx, res
+
+        completed_results = {}
+        futures = {}
+        with ThreadPoolExecutor(max_workers=min(len(discovered), 6)) as ex:
+            for i, page in enumerate(discovered):
+                f = ex.submit(_audit_single_page, page["url"], page["page_type"])
+                futures[f] = (i, page)
+
+            for future in as_completed(futures):
+                i, page = futures[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    result = {**page, "ui_report": None, "ux_report": None,
+                              "compliance_report": None, "seo_report": None}
+                completed_results[i] = result
+                yield _sse({
+                    "type": "page_complete",
+                    "url": page["url"],
+                    "page_type": page["page_type"],
+                    "page_index": i + 1,
+                    "total": len(discovered),
+                })
+
+        page_results = [completed_results[i] for i in range(len(discovered)) if i in completed_results]
+
+        # Aggregate
+        site_report = _build_site_report(page_results)
+
         log.info("[request] AUDIT DONE   total=%.1fs", time.perf_counter() - t_total)
+
         yield _sse({
             "type": "result",
             "ui_report": result["ui_report"],

@@ -4,6 +4,9 @@ import json
 import time
 import logging
 from typing import Dict, Any, List
+from pydantic import ValidationError
+
+from agents.schemas import SEOReport
 
 from gradient import Gradient
 from gradient import APITimeoutError, APIConnectionError
@@ -69,12 +72,22 @@ def _call_gradient_json(system_prompt: str, user_prompt: str) -> dict:
                     {"role": "user", "content": user_prompt},
                 ],
                 model=_MODEL,
+                temperature=0,
             )
             raw = response.choices[0].message.content
-            match = re.search(r"\{[\s\S]*\}", raw)
-            if match:
-                return json.loads(match.group())
-            return {"error": "Failed to parse LLM JSON response", "raw": raw}
+            # Two-pass parse: direct JSON first, then regex fallback
+            try:
+                return json.loads(raw)
+            except json.JSONDecodeError:
+                match = re.search(r"\{[\s\S]*\}", raw)
+                if match:
+                    try:
+                        return json.loads(match.group())
+                    except json.JSONDecodeError as je:
+                        log.error("[seo_agent] JSON decode failed: %s", je)
+                        return {"error": f"JSON decode error: {je}", "raw": raw[:500]}
+                log.error("[seo_agent] No JSON block found in response")
+                return {"error": "Failed to parse LLM JSON response", "raw": raw[:500]}
 
         except (APITimeoutError, APIConnectionError) as exc:
             if attempt < _MAX_RETRIES:
@@ -276,7 +289,7 @@ def run_seo_audit(url: str, raw_html: str, rendered_dom: str, playwright_succeed
     base_score = 10
     final_score = max(1, base_score - score_penalty)
 
-    return {
+    result = {
         "overall_score": final_score,
         "universal_factors": universal_params,
         "search_intent": intent_result,
@@ -284,3 +297,12 @@ def run_seo_audit(url: str, raw_html: str, rendered_dom: str, playwright_succeed
         "competitor_gap": competitor_gap,
         "recommendations": fail_recs if fail_recs else ["Page is well-optimized for SEO."]
     }
+
+    # Validate the full assembled report against the schema
+    try:
+        return SEOReport(**result).model_dump()
+    except ValidationError as ve:
+        log.error("[seo_agent] Final report schema validation failed: %s", ve)
+        # Still return the raw dict — better to send imperfect data than nothing
+        result["_validation_warning"] = str(ve)
+        return result
