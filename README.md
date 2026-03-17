@@ -382,16 +382,6 @@ Migrations live in `backend/supabase_migrations/` and are safe to run on a fresh
 | `audit_results` | Full audit report JSON per page per session |
 | `profiles` | Supabase auth user profiles |
 
-Run migrations in order:
-```bash
-# In your Supabase SQL editor or via CLI:
-phase3.sql          # base tables
-phase4_screenshots.sql
-phase5_security.sql
-phase6_audit_screenshots.sql
-phase7_drop_profile_fk.sql
-```
-
 ---
 
 ## Demo Site
