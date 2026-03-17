@@ -8,6 +8,13 @@ import { useEffect, useRef, useState } from "react";
 
 export type AuditStatus = "idle" | "running" | "complete" | "failed";
 
+export interface PhasePrompt {
+  phase:       number;
+  title:       string;
+  issue_count: number;
+  prompt:      string;
+}
+
 export interface PageAuditResult {
   url:              string;
   status:           "pending" | "auditing" | "complete" | "error";
@@ -40,6 +47,7 @@ export interface SiteAuditStreamResult {
   auditProgress:      { completed: number; total: number };
   auditError:         string | null;
   siteSecurityReport: SiteSecurityReport | null;
+  phasedPrompts:      PhasePrompt[];
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +78,7 @@ export function useSiteAuditStream(
   const [auditProgress,      setAuditProgress]      = useState({ completed: 0, total: 0 });
   const [auditError,         setAuditError]         = useState<string | null>(null);
   const [siteSecurityReport, setSiteSecurityReport] = useState<SiteSecurityReport | null>(null);
+  const [phasedPrompts,      setPhasedPrompts]      = useState<PhasePrompt[]>([]);
 
   // Captured at the time `enabled` becomes true (crawl is complete)
   const urlsRef      = useRef<string[]>([]);
@@ -86,6 +95,7 @@ export function useSiteAuditStream(
       setAuditProgress({ completed: 0, total: 0 });
       setAuditError(null);
       setSiteSecurityReport(null);
+      setPhasedPrompts([]);
       return;
     }
 
@@ -314,6 +324,9 @@ export function useSiteAuditStream(
               site_wide_findings: ev.security_site_wide_findings ?? [],
             });
           }
+          if (Array.isArray(ev.phased_prompts) && ev.phased_prompts.length > 0) {
+            setPhasedPrompts(ev.phased_prompts as PhasePrompt[]);
+          }
           break;
 
         case "error":
@@ -347,5 +360,5 @@ export function useSiteAuditStream(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auditStatus, siteSecurityReport]);
 
-  return { auditStatus, pageAudits, currentAuditUrl, auditProgress, auditError, siteSecurityReport };
+  return { auditStatus, pageAudits, currentAuditUrl, auditProgress, auditError, siteSecurityReport, phasedPrompts };
 }

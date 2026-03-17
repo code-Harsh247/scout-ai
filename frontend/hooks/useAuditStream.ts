@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { PhasePrompt } from "@/hooks/useSiteAuditStream";
 
 // ---------------------------------------------------------------------------
 // Types — mirror the backend JSON schemas exactly
@@ -110,6 +111,7 @@ export interface AuditStreamResult {
   /** Final `type: "result"` received */
   isDone: boolean;
   error: string | null;
+  phasedPrompts: PhasePrompt[];
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +129,7 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
   const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone]       = useState(false);
   const [error, setError]         = useState<string | null>(null);
+  const [phasedPrompts, setPhasedPrompts] = useState<PhasePrompt[]>([]);
 
   useEffect(() => {
     if (!targetUrl) return;
@@ -151,6 +154,8 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
         setIsLoading(false);
         setIsDone(true);
         setError(null);
+        // Fetch phased prompts for cached results
+        fetchPhasedPrompts(data.uiReport ?? null, data.uxReport ?? null, data.complianceReport ?? null, data.seoReport ?? null);
         return; // no cleanup needed — no AbortController was created
       }
     } catch { /* sessionStorage unavailable or corrupt — fall through */ }
@@ -261,6 +266,12 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
           if (event.screenshot_base64) setScreenshotUrl(`data:image/png;base64,${event.screenshot_base64}`);
           setIsLoading(false);
           setIsDone(true);
+          fetchPhasedPrompts(
+            event.ui_report ?? null,
+            event.ux_report ?? null,
+            event.compliance_report ?? null,
+            event.seo_report ?? null,
+          );
           break;
 
         case "error":
@@ -272,10 +283,36 @@ export function useAuditStream(targetUrl: string, accessToken?: string | null): 
 
     stream();
 
+    async function fetchPhasedPrompts(
+      ui: UiReport | null,
+      ux: UxReport | null,
+      compliance: ComplianceReport | null,
+      seo: SeoReport | null,
+    ) {
+      try {
+        const res = await fetch(`${API_URL}/audit/prompts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ui_report:         ui,
+            ux_report:         ux,
+            compliance_report: compliance,
+            seo_report:        seo,
+            site_url:          targetUrl,
+          }),
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { phases?: PhasePrompt[] };
+        if (Array.isArray(data.phases) && data.phases.length > 0) {
+          setPhasedPrompts(data.phases);
+        }
+      } catch { /* non-critical — silently ignore */ }
+    }
+
     return () => {
       abortController.abort();
     };
   }, [targetUrl]);
 
-  return { uiReport, uxReport, complianceReport, seoReport, screenshotUrl, isLoading, isDone, error };
+  return { uiReport, uxReport, complianceReport, seoReport, screenshotUrl, isLoading, isDone, error, phasedPrompts };
 }

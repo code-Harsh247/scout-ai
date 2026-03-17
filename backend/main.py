@@ -30,6 +30,7 @@ from agents.seo_agent import run_seo_audit
 from agents.security_agent import run_security_audit, run_site_wide_security_audit, run_page_content_security_check
 from tools.seo_scraper import fetch_raw_html
 from tools.vision_scraper import capture_website_context
+from prompt_generator import generate_phased_prompts
 
 # ---------------------------------------------------------------------------
 # 1. State
@@ -919,11 +920,14 @@ async def audit_site(
 
         # Drain queue until every page is accounted for
         done = 0
+        _completed_page_events: list[dict] = []
         while done < total:
             event = await q.get()
             yield _sse(event)
             if event["type"] in ("page_audit_complete", "page_audit_error"):
                 done += 1
+            if event["type"] == "page_audit_complete":
+                _completed_page_events.append(event)
 
         await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -951,6 +955,22 @@ async def audit_site(
                 security_counts,
             )
 
+        # Build phased prompts from all collected page results
+        phased_prompts = generate_phased_prompts(
+            pages=[
+                {
+                    "ui_report":          ev.get("ui_report"),
+                    "ux_report":          ev.get("ux_report"),
+                    "seo_report":         ev.get("seo_report"),
+                    "compliance_report":  ev.get("compliance_report"),
+                    "page_security_findings": ev.get("page_security_findings"),
+                }
+                for ev in _completed_page_events
+            ],
+            multi_page=True,
+            site_url=root_url,
+        )
+
         yield _sse({
             "type":             "site_audit_complete",
             "total":            total,
@@ -961,6 +981,7 @@ async def audit_site(
             "security_overall_score":     security_overall_score,
             "security_counts":            security_counts,
             "security_site_wide_findings": site_wide_findings,
+            "phased_prompts":             phased_prompts,
         })
 
     return StreamingResponse(
@@ -1048,7 +1069,51 @@ async def get_audit_session_pages(
 
 
 # ---------------------------------------------------------------------------
-# 8.  Security Audit  (Phase 5 - V1 passive)
+# 8.  Phased Prompts  (on-demand generation)
+# ---------------------------------------------------------------------------
+
+class PromptsRequest(BaseModel):
+    # Single-page audit reports
+    ui_report:          Optional[dict] = None
+    ux_report:          Optional[dict] = None
+    seo_report:         Optional[dict] = None
+    compliance_report:  Optional[dict] = None
+    security_report:    Optional[dict] = None
+    # Multi-page audit: list of per-page result dicts
+    pages:              Optional[List[dict]] = None
+    site_url:           str = ""
+
+
+@app.post("/audit/prompts")
+async def get_audit_prompts(req: PromptsRequest):
+    """
+    Generate phased AI fix prompts from audit results.
+
+    Accepts either a single-page audit result (ui_report, ux_report, …)
+    or a multi-page list (pages=[{ui_report, ux_report, …}, …]).
+
+    Returns synchronously — no LLM calls, pure computation.
+    """
+    try:
+        multi_page = bool(req.pages)
+        phases = generate_phased_prompts(
+            ui_report=req.ui_report,
+            ux_report=req.ux_report,
+            seo_report=req.seo_report,
+            compliance_report=req.compliance_report,
+            security_report=req.security_report,
+            pages=req.pages,
+            multi_page=multi_page,
+            site_url=req.site_url,
+        )
+        return {"phases": phases, "total_phases": len(phases)}
+    except Exception as exc:
+        log.exception("[audit/prompts] Failed: %s", exc)
+        return JSONResponse(status_code=500, content={"error": str(exc)})
+
+
+# ---------------------------------------------------------------------------
+# 9.  Security Audit  (Phase 5 - V1 passive)
 # ---------------------------------------------------------------------------
 
 @app.post("/security/run")

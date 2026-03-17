@@ -10,6 +10,7 @@ import {
   type UxReport,
 } from "@/hooks/useAuditStream";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
+import PhasedPrompts from "@/components/nonprimitive/PhasedPrompts";
 
 /** Pre-loaded reports â€” passed in lieu of SSE (read-only mode). */
 export interface PreloadedReports {
@@ -398,6 +399,7 @@ export default function AnalysisDashboard({ reports }: { reports?: PreloadedRepo
     screenshotUrl: streamedScreenshot,
     isDone:           streamedDone,
     error,
+    phasedPrompts,
   } = useAuditStream(streamUrl, accessToken);
 
   const uiReport         = reports?.uiReport         ?? streamedUi;
@@ -555,14 +557,226 @@ export default function AnalysisDashboard({ reports }: { reports?: PreloadedRepo
             })}
           </div>
 
-          {/* Active panel */}
-          <div className="p-6">
-            {activeTab === "ui"         && (uiReport         ? <UIAgentPanel         report={uiReport} />         : <CardSkeleton />)}
-            {activeTab === "ux"         && (uxReport         ? <UXAgentPanel         report={uxReport} />         : <CardSkeleton />)}
-            {activeTab === "seo"        && (seoReport        ? <SEOAgentPanel        report={seoReport} />        : <CardSkeleton />)}
-            {activeTab === "compliance" && (complianceReport ? <ComplianceAgentPanel report={complianceReport} /> : <CardSkeleton />)}
-          </div>
-        </div>
+            <div key={activeTab} className="animate-fade-in">
+              {activeTab === "overall" ? (
+                <div className="grid lg:grid-cols-3 gap-5">
+                  <div className="glass-card rounded-xl p-6 flex flex-col items-center justify-center">
+                    <CircularGauge score={scores.overall} />
+                    <div className="mt-4 w-full space-y-2.5">
+                      {(["ui", "ux", "compliance", "seo"] as AgentId[]).map((k) => (
+                        <div key={k} className="flex items-center gap-2">
+                          <span className="text-text-sub text-xs w-24 capitalize">{k}</span>
+                          <ScoreBar score={scores[k]} color={SCORE_COLORS[k]} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="glass-card rounded-xl p-6">
+                      <h3 className="text-text font-semibold mb-3 flex items-center gap-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                        </svg>
+                        Executive Summary
+                      </h3>
+                      <p className="text-text-sub text-sm leading-relaxed">{summaries.overall}</p>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-6">
+                      <h3 className="text-text font-semibold mb-4">Priority Actions</h3>
+                      <div className="space-y-3">
+                        {actions.length === 0 && <p className="text-text-sub text-sm">No recommendations yet.</p>}
+                        {actions.map((action, i) => {
+                          const priorityColor = action.priority === "Critical" ? "#ef4444" : action.priority === "High" ? "#f59e0b" : "#8b5cf6";
+                          return (
+                            <div key={`${action.text}-${i}`} className="flex gap-3 items-start p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                              <span className="shrink-0 w-6 h-6 rounded-full bg-black/40 text-xs font-bold flex items-center justify-center" style={{ color: priorityColor, border: `1px solid ${priorityColor}40` }}>
+                                {i + 1}
+                              </span>
+                              <div>
+                                <span className="text-xs font-semibold mr-2" style={{ color: priorityColor }}>{action.priority}</span>
+                                <span className="text-text-sub text-sm">{action.text}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid lg:grid-cols-3 gap-5">
+                  <div className="glass-card rounded-xl p-6 flex flex-col items-center justify-center gap-4">
+                    <div>
+                      <p className="text-text-sub text-xs text-center mb-2 capitalize">{activeTab} Score</p>
+                      <div className="relative flex items-center justify-center">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            fill="none"
+                            stroke={SCORE_COLORS[activeTab as AgentId]}
+                            strokeWidth="6"
+                            strokeLinecap="round"
+                            strokeDasharray="314.16"
+                            strokeDashoffset={314.16 * (1 - scores[activeTab] / 100)}
+                            transform="rotate(-90 60 60)"
+                            style={{ filter: `drop-shadow(0 0 6px ${SCORE_COLORS[activeTab as AgentId]})`, transition: "stroke-dashoffset 1.2s ease-out" }}
+                          />
+                          <text x="60" y="55" textAnchor="middle" fill="#f0f2f5" fontSize="22" fontWeight="700" fontFamily="var(--font-display)">
+                            {scores[activeTab]}
+                          </text>
+                          <text x="60" y="70" textAnchor="middle" fill="#7a8394" fontSize="9" fontFamily="var(--font-display)">
+                            /100
+                          </text>
+                        </svg>
+                      </div>
+                    </div>
+
+                    {activeTab === "compliance" && complianceReport && (
+                      <p className="text-xs text-text-sub">Risk score: {complianceReport.overall_risk_score}/10 (lower is better)</p>
+                    )}
+
+                    <div className="w-full space-y-1.5">
+                      {(checks[activeTab as AgentId] || []).map((c) => (
+                        <div key={c.label} className="flex items-center gap-2">
+                          <span className="w-3.5 h-3.5 rounded-full shrink-0 flex items-center justify-center" style={{ background: c.pass ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)" }}>
+                            {c.pass ? (
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            ) : (
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            )}
+                          </span>
+                          <span className="text-text-sub text-xs truncate capitalize">{c.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="glass-card rounded-xl p-6">
+                      <h3 className="text-text font-semibold mb-3 flex items-center gap-2 capitalize">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={SCORE_COLORS[activeTab as AgentId]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        {activeTab} Insights
+                      </h3>
+                      <p className="text-text-sub text-sm leading-relaxed">{summaries[activeTab as AgentId]}</p>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-6">
+                      <h3 className="text-text font-semibold mb-4">Detailed Checks</h3>
+                      <div className="space-y-2">
+                        {(checks[activeTab as AgentId] || []).map((check, i) => (
+                          <div
+                            key={`${check.label}-${i}`}
+                            className="flex items-start gap-3 p-3 rounded-lg transition-colors"
+                            style={{ background: check.pass ? "rgba(34,197,94,0.04)" : "rgba(239,68,68,0.05)", border: `1px solid ${check.pass ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.12)"}` }}
+                          >
+                            <span className="mt-0.5 w-5 h-5 rounded-full shrink-0 flex items-center justify-center" style={{ background: check.pass ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)" }}>
+                              {check.pass ? (
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : (
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="18" y1="6" x2="6" y2="18" />
+                                  <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                              )}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-text text-sm font-medium capitalize">{check.label}</p>
+                              {check.note && <p className="text-[11px] mt-0.5" style={{ color: check.pass ? "#22c55e99" : "#ef444499" }}>{check.note}</p>}
+                            </div>
+                            <span
+                              className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{ background: check.pass ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: check.pass ? "#22c55e" : "#ef4444" }}
+                            >
+                              {check.pass ? "PASS" : "FAIL"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {!showResults && (
+          <section className="animate-fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <p className="text-text-sub text-xs font-medium tracking-widest uppercase">Analysis Report</p>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <span
+                className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}
+              >
+                Processing…
+              </span>
+            </div>
+
+            {/* Skeleton cards */}
+            <div className="grid lg:grid-cols-3 gap-5">
+              <div className="glass-card rounded-xl p-6">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-35 h-35 rounded-full" style={{ background: "rgba(255,255,255,0.04)" }} />
+                  <div className="w-full space-y-3">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="h-2 w-16 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }} />
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                          <div
+                            className="h-full rounded-full animate-shimmer"
+                            style={{
+                              width: "60%",
+                              backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%)",
+                              backgroundSize: "200% 100%",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-2 space-y-4">
+                {[0, 1].map((i) => (
+                  <div key={i} className="glass-card rounded-xl p-6">
+                    <div className="h-4 w-32 mb-4 rounded" style={{ background: "rgba(255,255,255,0.06)" }} />
+                    <div className="space-y-3">
+                      {[0, 1, 2].map((j) => (
+                        <div key={j} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div
+                            className="h-3 rounded animate-shimmer"
+                            style={{
+                              width: `${60 + j * 15}%`,
+                              backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%)",
+                              backgroundSize: "200% 100%",
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
