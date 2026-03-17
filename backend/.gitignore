@@ -15,3 +15,4 @@ env/
 # Gradient ADK
 .gradient/
 venv
+supabase_migrations/
