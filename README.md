@@ -81,6 +81,8 @@ Supabase PostgreSQL
       audit_results / user profiles
 ```
 
+![Architecture Diagram](./arch.svg)
+
 ### LangGraph fan-out
 
 The single-page audit graph fans out to all five agents in parallel after the scrape node completes, then merges results:
