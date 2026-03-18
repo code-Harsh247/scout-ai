@@ -463,6 +463,7 @@ def save_page_audit(
     seo_report: Optional[dict],
     overall_score: Optional[float],
     screenshot_b64: Optional[str] = None,
+    security_report: Optional[dict] = None,
 ) -> None:
     """Insert a page_audits row."""
     client = _get_client()
@@ -479,6 +480,8 @@ def save_page_audit(
                 "seo_report":        seo_report,
                 "overall_score":     overall_score,
             }
+            if security_report is not None:
+                row["security_report"] = security_report
             # Upload screenshot to storage, store URL in DB
             if screenshot_b64:
                 ss_url = upload_screenshot(
@@ -514,26 +517,43 @@ def complete_audit_session(
 # ---------------------------------------------------------------------------
 
 def create_security_session(
-    crawl_session_id: str,
+    crawl_session_id: Optional[str],
     mode: str,
     user_id: Optional[str],
+    audit_session_id: Optional[str] = None,
 ) -> str:
-    """Insert a new security_sessions row. Returns the generated UUID."""
+    """Insert a new security_sessions row. Returns the generated UUID.
+
+    Both crawl_session_id and audit_session_id are optional — at least one
+    should be provided so the session can be looked up later.
+    """
     security_session_id = str(uuid.uuid4())
     client = _get_client()
     if client:
         try:
             row: dict = {
                 "id": security_session_id,
-                "crawl_session_id": crawl_session_id,
                 "mode": mode,
                 "status": "running",
             }
+            if crawl_session_id:
+                row["crawl_session_id"] = crawl_session_id
+            if audit_session_id:
+                row["audit_session_id"] = audit_session_id
             if user_id:
                 row["user_id"] = user_id
             client.table("security_sessions").insert(row).execute()
         except Exception as e:
             log.warning("[db] create_security_session: %s", e)
+            # FK on user_id → profiles may still exist if phase9 migration hasn't run.
+            # Retry without user_id so the session is still created.
+            if _is_fk_violation(e) and user_id:
+                try:
+                    fallback_row = {k: v for k, v in row.items() if k != "user_id"}
+                    client.table("security_sessions").insert(fallback_row).execute()
+                    log.warning("[db] create_security_session FK fallback succeeded (dropped user_id)")
+                except Exception as e2:
+                    log.warning("[db] create_security_session FK fallback failed: %s", e2)
     return security_session_id
 
 
@@ -598,3 +618,18 @@ def complete_security_session(
             }).eq("id", security_session_id).execute()
         except Exception as e:
             log.warning("[db] complete_security_session: %s", e)
+
+
+def save_phased_prompts(
+    audit_session_id: str,
+    phased_prompts: list,
+) -> None:
+    """Persist phased_prompts JSON into the audit_sessions row."""
+    client = _get_client()
+    if client:
+        try:
+            client.table("audit_sessions").update({
+                "phased_prompts": phased_prompts,
+            }).eq("id", audit_session_id).execute()
+        except Exception as e:
+            log.warning("[db] save_phased_prompts: %s", e)

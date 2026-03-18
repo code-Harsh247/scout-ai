@@ -302,7 +302,16 @@ def _run_graph_site(url: str) -> dict:
     }
 
 
-async def _stream_audit(url: str):
+async def _stream_audit(url: str, user_id: Optional[str] = None):
+    from crawler.db import (
+        create_audit_session,
+        save_page_audit,
+        complete_audit_session,
+        create_security_session,
+        save_security_finding,
+        complete_security_session,
+        save_phased_prompts,
+    )
     loop = asyncio.get_event_loop()
     log.info("[request] AUDIT START  url=%s", url)
     t_total = time.perf_counter()
@@ -314,6 +323,95 @@ async def _stream_audit(url: str):
             return
 
         log.info("[request] AUDIT DONE   total=%.1fs", time.perf_counter() - t_total)
+
+        # ── Persist to database ──────────────────────────────────────────────
+        audit_session_id = await asyncio.to_thread(
+            create_audit_session, url, None, user_id
+        )
+
+        security_session_id = await asyncio.to_thread(
+            create_security_session, None, "passive", user_id, audit_session_id
+        )
+
+        # Persist each security finding
+        sec_report = result.get("security_report") or {}
+        sec_findings = sec_report.get("findings", [])
+        for finding in sec_findings:
+            if not isinstance(finding, dict):
+                continue
+            try:
+                await asyncio.to_thread(
+                    save_security_finding,
+                    security_session_id,
+                    None,
+                    finding.get("url", url),
+                    finding.get("category", "unknown"),
+                    finding.get("title", "Untitled finding"),
+                    finding.get("description", ""),
+                    finding.get("severity", "low"),
+                    finding.get("confidence", "medium"),
+                    finding.get("recommendation", ""),
+                    finding.get("evidence", {}),
+                    finding.get("scope", "site_wide"),
+                )
+            except Exception as sec_exc:
+                log.warning("[audit] save finding failed: %s", sec_exc)
+
+        # Compute scores for this page
+        scores = [
+            r.get("overall_score") or r.get("overall_risk_score")
+            for r in [
+                result["ui_report"] or {},
+                result["ux_report"] or {},
+                result["seo_report"] or {},
+            ] if r
+        ]
+        risk = (result["compliance_report"] or {}).get("overall_risk_score")
+        if risk is not None:
+            scores.append(10 - risk)
+        valid_scores = [s for s in scores if isinstance(s, (int, float))]
+        page_score = round(sum(valid_scores) / len(valid_scores), 1) if valid_scores else None
+
+        await asyncio.to_thread(
+            save_page_audit,
+            audit_session_id, url,
+            result["ui_report"], result["ux_report"],
+            result["compliance_report"], result["seo_report"],
+            page_score,
+            result.get("screenshot_base64"),
+            result.get("security_report"),
+        )
+
+        # Complete security session
+        sec_counts: dict = sec_report.get("counts", {"critical": 0, "high": 0, "medium": 0, "low": 0})
+        sec_overall = sec_report.get("overall_score", 100)
+        await asyncio.to_thread(
+            complete_security_session,
+            security_session_id,
+            sec_overall,
+            sec_report.get("scanned_pages", 1),
+            sec_counts,
+        )
+
+        await asyncio.to_thread(complete_audit_session, audit_session_id, page_score)
+
+        # Generate and persist phased prompts
+        phased_prompts = generate_phased_prompts(
+            pages=[{
+                "url":               url,
+                "ui_report":         result["ui_report"],
+                "ux_report":         result["ux_report"],
+                "seo_report":        result["seo_report"],
+                "compliance_report": result["compliance_report"],
+                "security_report":   result.get("security_report"),
+            }],
+            multi_page=False,
+            site_url=url,
+        )
+        await asyncio.to_thread(save_phased_prompts, audit_session_id, phased_prompts)
+        log.info("[audit] DB persist done  audit_session_id=%s", audit_session_id)
+        # ── End persistence ──────────────────────────────────────────────────
+
         yield _sse({
             "type": "result",
             "ui_report": result["ui_report"],
@@ -322,6 +420,8 @@ async def _stream_audit(url: str):
             "seo_report": result["seo_report"],
             "security_report": result["security_report"],
             "screenshot_base64": result.get("screenshot_base64"),
+            "audit_session_id": audit_session_id,
+            "phased_prompts": phased_prompts,
         })
 
     except Exception as exc:
@@ -330,9 +430,13 @@ async def _stream_audit(url: str):
 
 
 @app.post("/audit")
-async def audit(req: AuditRequest):
+async def audit(
+    req: AuditRequest,
+    user: dict | None = Depends(get_current_user_optional),
+):
+    user_id = user["sub"] if user else None
     return StreamingResponse(
-        _stream_audit(req.url),
+        _stream_audit(req.url, user_id=user_id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -617,7 +721,10 @@ async def get_crawl_audit_session(session_id: str):
             except Exception as _e:
                 log.debug("[audit/restore] crawled_pages screenshot fallback failed: %s", _e)
 
-        # Enrich with security findings split by scope
+        # Enrich with security findings split by scope.
+        # Primary lookup: by crawl_session_id. Fallback: by audit_session_id
+        # (security session may have been created without crawl linkage when the
+        #  profiles FK was still in place and the user_id insert failed).
         sec_session_res = (
             client.table("security_sessions")
             .select("id,overall_score,critical_count,high_count,medium_count,low_count")
@@ -627,6 +734,17 @@ async def get_crawl_audit_session(session_id: str):
             .execute()
         )
         sec_session = (sec_session_res.data or [None])[0]
+        # Fallback: look up by audit_session_id when crawl-based lookup found nothing
+        if not sec_session and audit_session.get("id"):
+            sec_session_res2 = (
+                client.table("security_sessions")
+                .select("id,overall_score,critical_count,high_count,medium_count,low_count")
+                .eq("audit_session_id", audit_session["id"])
+                .order("started_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            sec_session = (sec_session_res2.data or [None])[0]
         site_wide_findings: list = []
         page_content_findings_by_url: dict[str, list] = {}
 
@@ -709,6 +827,7 @@ async def audit_site(
             create_security_session,
             save_security_finding,
             complete_security_session,
+            save_phased_prompts,
         )
         loop = asyncio.get_event_loop()
         urls        = [u.strip() for u in req.urls if u and u.strip()]
@@ -736,15 +855,14 @@ async def audit_site(
             create_audit_session, root_url, req.session_id, user_id
         )
 
-        # Create one security session for this full run when crawl session is available.
-        security_session_id: str | None = None
-        if req.session_id:
-            security_session_id = await asyncio.to_thread(
-                create_security_session,
-                req.session_id,
-                "passive",
-                user_id,
-            )
+        # Create one security session for this full run — always, even without a crawl session.
+        security_session_id: str = await asyncio.to_thread(
+            create_security_session,
+            req.session_id or None,
+            "passive",
+            user_id,
+            audit_session_id,
+        )
 
         # ── Run site-wide security scan ONCE on the root URL ──────────
         site_wide_report: dict = {}
@@ -972,6 +1090,9 @@ async def audit_site(
             site_url=root_url,
         )
 
+        # Persist phased prompts to DB
+        await asyncio.to_thread(save_phased_prompts, audit_session_id, phased_prompts)
+
         yield _sse({
             "type":             "site_audit_complete",
             "total":            total,
@@ -1067,6 +1188,29 @@ async def get_audit_session_pages(
         return {"pages": res.data or []}
     except Exception as e:
         return {"error": str(e), "pages": []}
+
+
+@app.get("/audit/session/{audit_session_id}/prompts")
+async def get_audit_session_prompts(
+    audit_session_id: str,
+    user: dict | None = Depends(get_current_user_optional),
+):
+    """Return the stored phased_prompts for a given audit_session_id."""
+    from crawler.db import _get_client
+    client = _get_client()
+    if not client:
+        return {"error": "Database not configured", "phased_prompts": []}
+    try:
+        res = (
+            client.table("audit_sessions")
+            .select("phased_prompts")
+            .eq("id", audit_session_id)
+            .single()
+            .execute()
+        )
+        return {"phased_prompts": (res.data or {}).get("phased_prompts") or []}
+    except Exception as e:
+        return {"error": str(e), "phased_prompts": []}
 
 
 # ---------------------------------------------------------------------------

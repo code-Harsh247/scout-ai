@@ -4,3 +4,21 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+.env
+.env.*
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Logs
+*.log

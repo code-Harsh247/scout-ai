@@ -114,11 +114,15 @@ export function useSiteAuditStream(
           pageAudits: [string, PageAuditResult][];
           progress:   { completed: number; total: number };
           siteSecurityReport?: SiteSecurityReport | null;
+          phasedPrompts?: PhasePrompt[];
         };
         setPageAudits(new Map(data.pageAudits));
         setAuditProgress(data.progress);
         if (data.siteSecurityReport) {
           setSiteSecurityReport(data.siteSecurityReport);
+        }
+        if (Array.isArray(data.phasedPrompts) && data.phasedPrompts.length > 0) {
+          setPhasedPrompts(data.phasedPrompts);
         }
         setAuditStatus("complete");
         setCurrentAuditUrl(null);
@@ -183,6 +187,21 @@ export function useSiteAuditStream(
           // Restore site-level security summary from DB response
           if (data.security_summary) {
             setSiteSecurityReport(data.security_summary as SiteSecurityReport);
+          }
+
+          // Fetch stored phased prompts from DB via audit_session_id
+          const auditSessionId: string | null = data.audit_session?.id ?? null;
+          if (auditSessionId) {
+            try {
+              const promptsRes = await fetch(
+                `${API_URL}/audit/session/${auditSessionId}/prompts`,
+                { headers, signal: controller.signal },
+              );
+              const promptsData = await promptsRes.json();
+              if (Array.isArray(promptsData.phased_prompts) && promptsData.phased_prompts.length > 0) {
+                setPhasedPrompts(promptsData.phased_prompts as PhasePrompt[]);
+              }
+            } catch { /* non-fatal — prompts just won't show on revisit */ }
           }
 
           setPageAudits(map);
@@ -354,11 +373,12 @@ export function useSiteAuditStream(
           pageAudits:         [...pageAudits.entries()],
           progress:           auditProgress,
           siteSecurityReport: siteSecurityReport ?? null,
+          phasedPrompts:      phasedPrompts,
         }),
       );
     } catch { /* quota exceeded — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auditStatus, siteSecurityReport]);
+  }, [auditStatus, siteSecurityReport, phasedPrompts]);
 
   return { auditStatus, pageAudits, currentAuditUrl, auditProgress, auditError, siteSecurityReport, phasedPrompts };
 }
