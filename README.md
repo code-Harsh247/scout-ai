@@ -20,6 +20,7 @@
 - [Phased Fix Prompts](#phased-fix-prompts)
 - [Database Schema](#database-schema)
 - [Demo Site](#demo-site)
+- [Test Credentials](#test-credentials)
 - [Roadmap](#roadmap)
 
 ---
@@ -401,6 +402,21 @@ cd demo && python server.py   # → http://localhost:8080
 ```
 
 Pages included: landing, pricing, products (3 variants), blog (3 posts), docs, about, contact.
+
+---
+
+---
+
+## Test Credentials
+
+If you want to bypass the registration process and jump straight into testing Scout.ai's authenticated features, you can use the following test account. 
+
+This account is pre-populated with sample crawl sessions and audit history so you can explore the dashboard immediately.
+
+- **Email:** `test@gmail.com`
+- **Password:** `12345678`
+
+> **Note:** Please do not change the password for this account, as it is shared publicly for demonstration purposes.
 
 ---
 
