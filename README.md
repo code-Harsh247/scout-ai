@@ -80,7 +80,7 @@ Supabase PostgreSQL
   └── crawl_sessions / crawled_pages / crawled_links / template_patterns
       audit_results / user profiles
 ```
-
+![Architecture Diagram](./Architechture2.jpeg)
 ### LangGraph fan-out
 
 The single-page audit graph fans out to all five agents in parallel after the scrape node completes, then merges results:
